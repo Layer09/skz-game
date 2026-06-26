@@ -105,9 +105,9 @@ function renderCategory() {
     </div>
 
     <div class="card">
-      <button onclick="vote('old')">Anciens</button>
-      <button onclick="vote('mid')">Mid</button>
-      <button onclick="vote('recent')">Récents</button>
+        <button onclick="vote('old')">Anciens (2018-2020)</button>
+        <button onclick="vote('mid')">Mid Era (2021-2023)</button>
+        <button onclick="vote('recent')">Récents (2024-2026)</button>
     </div>
   `;
 

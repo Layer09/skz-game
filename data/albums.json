@@ -1,0 +1,137 @@
+[
+  {
+    "id": "mixtape",
+    "name": "Mixtape",
+    "year": 2018,
+    "era": "old",
+    "cover": "assets/albums/mixtape.jpg",
+    "woojin": true,
+    "open": false
+  },
+  {
+    "id": "i_am_not",
+    "name": "I am NOT",
+    "year": 2018,
+    "era": "old",
+    "cover": "assets/albums/i_am_not.jpg",
+    "woojin": true,
+    "open": false
+  },
+  {
+    "id": "i_am_who",
+    "name": "I am WHO",
+    "year": 2018,
+    "era": "old",
+    "cover": "assets/albums/i_am_who.jpg",
+    "woojin": true,
+    "open": false
+  },
+  {
+    "id": "i_am_you",
+    "name": "I am YOU",
+    "year": 2018,
+    "era": "old",
+    "cover": "assets/albums/i_am_you.jpg",
+    "woojin": true,
+    "open": false
+  },
+  {
+    "id": "clka",
+    "name": "Clé 1 : MIROH",
+    "year": 2019,
+    "era": "old",
+    "cover": "assets/albums/miroh.jpg",
+    "woojin": true,
+    "open": false
+  },
+  {
+    "id": "yellow_wood",
+    "name": "Clé 2 : Yellow Wood",
+    "year": 2019,
+    "era": "old",
+    "cover": "assets/albums/yellow_wood.jpg",
+    "woojin": true,
+    "open": false
+  },
+  {
+    "id": "levanter",
+    "name": "Clé : LEVANTER",
+    "year": 2019,
+    "era": "old",
+    "cover": "assets/albums/levanter.jpg",
+    "woojin": true,
+    "open": false
+  },
+  {
+    "id": "go_live",
+    "name": "GO LIVE",
+    "year": 2020,
+    "era": "old",
+    "cover": "assets/albums/go_live.jpg",
+    "woojin": false,
+    "open": false
+  },
+  {
+    "id": "in_life",
+    "name": "IN LIFE",
+    "year": 2020,
+    "era": "old",
+    "cover": "assets/albums/in_life.jpg",
+    "woojin": false,
+    "open": false
+  },
+  {
+    "id": "noeasy",
+    "name": "NOEASY",
+    "year": 2021,
+    "era": "mid",
+    "cover": "assets/albums/noeasy.jpg",
+    "woojin": false,
+    "open": false
+  },
+  {
+    "id": "oddinary",
+    "name": "ODDINARY",
+    "year": 2022,
+    "era": "mid",
+    "cover": "assets/albums/oddinary.jpg",
+    "woojin": false,
+    "open": false
+  },
+  {
+    "id": "maxident",
+    "name": "MAXIDENT",
+    "year": 2022,
+    "era": "mid",
+    "cover": "assets/albums/maxident.jpg",
+    "woojin": false,
+    "open": false
+  },
+  {
+    "id": "5_star",
+    "name": "★★★★★ (5-STAR)",
+    "year": 2023,
+    "era": "mid",
+    "cover": "assets/albums/5_star.jpg",
+    "woojin": false,
+    "open": false
+  },
+  {
+    "id": "rock_star",
+    "name": "ROCK-STAR",
+    "year": 2023,
+    "era": "mid",
+    "cover": "assets/albums/rock_star.jpg",
+    "woojin": false,
+    "open": false
+  },
+  {
+    "id": "ate",
+    "name": "ATE",
+    "year": 2024,
+    "era": "recent",
+    "cover": "assets/albums/ate.jpg",
+    "woojin": false,
+    "open": false
+  }
+]

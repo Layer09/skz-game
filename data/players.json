@@ -1,0 +1,59 @@
+{
+  "players": [
+    {
+      "id": "alice",
+      "name": "Alice",
+      "color": {
+        "name": "bleu ciel",
+        "primary": "#7EC8E3",
+        "secondary": "#2B4F81"
+      },
+      "joined": true,
+      "lastSeen": null
+    },
+    {
+      "id": "bob",
+      "name": "Bob",
+      "color": {
+        "name": "rouge",
+        "primary": "#FF6B6B",
+        "secondary": "#8B1E1E"
+      },
+      "joined": false,
+      "lastSeen": null
+    },
+    {
+      "id": "charlie",
+      "name": "Charlie",
+      "color": {
+        "name": "vert foncé",
+        "primary": "#4CAF50",
+        "secondary": "#1B5E20"
+      },
+      "joined": false,
+      "lastSeen": null
+    },
+    {
+      "id": "emma",
+      "name": "Emma",
+      "color": {
+        "name": "violet",
+        "primary": "#B388FF",
+        "secondary": "#4A148C"
+      },
+      "joined": false,
+      "lastSeen": null
+    },
+    {
+      "id": "julie",
+      "name": "Julie",
+      "color": {
+        "name": "rose",
+        "primary": "#FF80AB",
+        "secondary": "#AD1457"
+      },
+      "joined": false,
+      "lastSeen": null
+    }
+  ]
+}
