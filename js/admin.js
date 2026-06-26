@@ -3,95 +3,192 @@ import {
   doc,
   setDoc,
   updateDoc,
-  onSnapshot,
-  collection,
-  addDoc
+  onSnapshot
 } from "./firebase.js";
 
 import { log } from "./logs.js";
+import { addPoints } from "./scoring.js";
+import { getFinalRanking } from "./endgame.js";
+
+import { listenGame, resetGame, setPhase } from "./game.js";
+import { countVotes, getTopVotes, pickRandom } from "./utils.js";
 
 const admin = document.getElementById("admin");
 
-let state={}, players={}, catVotes={}, logs=[];
+let state = {};
+let players = {};
+let categoryVotes = {};
+let albumVotes = {};
 
-onSnapshot(doc(db,"game","state"), s=>{state=s.data();render();});
-onSnapshot(doc(db,"game","players"), s=>{players=s.data();render();});
-onSnapshot(doc(db,"game","categoryVotes"), s=>{catVotes=s.data();});
+/* =========================
+   LIVE STATE
+========================= */
 
-function render(){
+listenGame((s) => {
+  state = s;
+  render();
+});
 
-  const missing = Object.keys(players)
-    .filter(p=>!catVotes[p]);
+onSnapshot(doc(db, "game", "players"), snap => {
+  players = snap.data() || {};
+});
+
+onSnapshot(doc(db, "game", "categoryVotes"), snap => {
+  categoryVotes = snap.data() || {};
+});
+
+onSnapshot(doc(db, "game", "albumVotes"), snap => {
+  albumVotes = snap.data() || {};
+});
+
+/* =========================
+   UI
+========================= */
+
+function render() {
+  if (!state) return;
+
+  const missingCategory = Object.keys(players)
+    .filter(p => !categoryVotes[p]);
+
+  const missingAlbum = Object.keys(players)
+    .filter(p => !albumVotes[p]);
 
   admin.innerHTML = `
     <div class="card">
-      <h1>ADMIN</h1>
+      <h1>👑 ADMIN PANEL</h1>
 
-      <button onclick="startCat()">Start catégorie</button>
-      <button onclick="startAlbum()">Start album</button>
-      <button onclick="reset()">RESET SOIRÉE</button>
+      <button onclick="startCategory()">▶ Start Category Vote</button>
+      <button onclick="resolveCategory()">⚡ Resolve Category</button>
+      <button onclick="startAlbum()">▶ Start Album Vote</button>
+      <button onclick="finishGame()">🏁 Finish Game</button>
+      <button onclick="showRanking()">📊 Show Ranking</button>
+      <button onclick="reset()">🔄 RESET SOIRÉE</button>
     </div>
 
     <div class="card">
-      <h2>Joueurs</h2>
-      ${Object.keys(players).map(p=>`<div>${p}</div>`).join("")}
+      <h2>📊 État</h2>
+      <p>Phase: <b>${state.phase}</b></p>
+      <p>Round: ${state.round || 0}</p>
     </div>
 
     <div class="card">
-      <h2>Votes catégorie</h2>
+      <h2>👥 Joueurs</h2>
+      ${Object.keys(players).map(p => `<div>• ${p}</div>`).join("")}
+    </div>
 
-      <p><b>Voté :</b></p>
-      ${Object.keys(catVotes).map(v=>`<div>${v} → ${catVotes[v]}</div>`).join("")}
+    <div class="card">
+      <h2>🗳️ Votes catégorie</h2>
 
-      <p><b>Manquants :</b></p>
-      ${missing.map(m=>`<div style="color:red">${m}</div>`).join("")}
+      <p><b>Manquants:</b></p>
+      ${missingCategory.map(m => `<div style="color:red">• ${m}</div>`).join("")}
+
+      <p><b>Votes:</b></p>
+      ${Object.entries(categoryVotes).map(([k,v]) => `
+        <div>${k} → ${v}</div>
+      `).join("")}
+    </div>
+
+    <div class="card">
+      <h2>📀 Votes album</h2>
+
+      <p><b>Manquants:</b></p>
+      ${missingAlbum.map(m => `<div style="color:red">• ${m}</div>`).join("")}
+
+      <p><b>Votes:</b></p>
+      ${Object.entries(albumVotes).map(([k,v]) => `
+        <div>${k} → ${v}</div>
+      `).join("")}
     </div>
   `;
 
-  window.startCat=startCat;
-  window.startAlbum=startAlbum;
-  window.reset=reset;
+  window.startCategory = startCategory;
+  window.resolveCategory = resolveCategory;
+  window.startAlbum = startAlbum;
+  window.reset = reset;
+  window.finishGame = finishGame;
+  window.showRanking = showRanking;
 }
 
-async function startCat(){
-  await setDoc(doc(db,"game","state"), {
-    phase:"category"
-  });
+/* =========================
+   PHASE 1 — CATEGORY
+========================= */
 
-  await log("------- Catégorie lancée -------");
+async function startCategory() {
+  await setPhase("category");
+
+  await setDoc(doc(db, "game", "categoryVotes"), {});
 }
 
-async function startAlbum(){
+/**
+ * Choisit la catégorie gagnante
+ */
+async function resolveCategory() {
+  const counts = countVotes(categoryVotes);
 
-  const count = {};
-  Object.values(catVotes).forEach(v=>{
-    count[v]=(count[v]||0)+1;
-  });
+  const top = getTopVotes(counts);
 
-  const max = Math.max(...Object.values(count));
-  let winners = Object.keys(count).filter(k=>count[k]===max);
+  const chosen = pickRandom(top);
 
-  const chosen = winners[Math.floor(Math.random()*winners.length)];
-
-  await setDoc(doc(db,"game","state"), {
-    phase:"album",
+  await setPhase("categoryResolved", {
     currentCategory: chosen
   });
-
-  await log(`Catégorie validée : ${chosen}`);
 }
 
-async function reset(){
+/* =========================
+   PHASE 2 — ALBUM
+========================= */
 
-  if(!confirm("RESET SOIRÉE ?")) return;
+async function startAlbum() {
+  if (!state.currentCategory) {
+    alert("Résous la catégorie d'abord");
+    return;
+  }
 
-  await setDoc(doc(db,"game","state"), {
-    phase:"lobby",
-    currentCategory:null
+  await setPhase("album");
+
+  await setDoc(doc(db, "game", "albumVotes"), {});
+}
+
+/* =========================
+   RESET
+========================= */
+
+async function reset() {
+  if (!confirm("RESET COMPLET DE LA SOIRÉE ?")) return;
+
+  await setPhase("lobby", {
+    currentCategory: null,
+    currentAlbum: null
   });
 
-  await setDoc(doc(db,"game","players"), {});
-  await setDoc(doc(db,"game","categoryVotes"), {});
+  await setDoc(doc(db, "game", "players"), {});
+  await setDoc(doc(db, "game", "categoryVotes"), {});
+  await setDoc(doc(db, "game", "albumVotes"), {});
+}
 
-  await log("🔄 RESET COMPLET SOIRÉE");
+async function finishGame() {
+  await log("🏁 FIN DE PARTIE");
+
+  const ranking = await getFinalRanking();
+
+  await log("----- CLASSEMENT FINAL -----");
+
+  ranking.forEach(([name, score], i) => {
+    log(`${i + 1}. ${name} - ${score} points`);
+  });
+
+  alert("Game finished — check logs");
+}
+
+async function showRanking() {
+  const ranking = await getFinalRanking();
+
+  let text = "CLASSEMENT FINAL\n\n";
+
+  ranking.forEach(([name, score], i) => {
+    text += `${i + 1}. ${name} - ${score}\n`;
+  });
+
+  alert(text);
 }
