@@ -2,16 +2,13 @@ import {
   db,
   doc,
   setDoc,
-  updateDoc,
   onSnapshot
 } from "./firebase.js";
 
-import { log } from "./logs.js";
-import { addPoints } from "./scoring.js";
-import { getFinalRanking } from "./endgame.js";
-
-import { listenGame, resetGame, setPhase } from "./game.js";
+import { listenGame, setPhase } from "./game.js";
 import { countVotes, getTopVotes, pickRandom } from "./utils.js";
+import { log } from "./logs.js";
+import { getFinalRanking } from "./endgame.js";
 
 const admin = document.getElementById("admin");
 
@@ -21,7 +18,7 @@ let categoryVotes = {};
 let albumVotes = {};
 
 /* =========================
-   LIVE STATE
+   LISTEN STATE
 ========================= */
 
 listenGame((s) => {
@@ -31,18 +28,30 @@ listenGame((s) => {
 
 onSnapshot(doc(db, "game", "players"), snap => {
   players = snap.data() || {};
+  render(); // 🔥 IMPORTANT FIX
 });
 
 onSnapshot(doc(db, "game", "categoryVotes"), snap => {
   categoryVotes = snap.data() || {};
+  render();
 });
 
 onSnapshot(doc(db, "game", "albumVotes"), snap => {
   albumVotes = snap.data() || {};
+  render();
 });
 
 /* =========================
-   UI
+   HELPERS
+========================= */
+
+function getPlayerList() {
+  return Object.values(players)
+    .map(p => typeof p === "string" ? p : p.name);
+}
+
+/* =========================
+   RENDER
 ========================= */
 
 function render() {
@@ -61,8 +70,10 @@ function render() {
       <button onclick="startCategory()">▶ Start Category Vote</button>
       <button onclick="resolveCategory()">⚡ Resolve Category</button>
       <button onclick="startAlbum()">▶ Start Album Vote</button>
+
       <button onclick="finishGame()">🏁 Finish Game</button>
       <button onclick="showRanking()">📊 Show Ranking</button>
+
       <button onclick="reset()">🔄 RESET SOIRÉE</button>
     </div>
 
@@ -73,8 +84,11 @@ function render() {
     </div>
 
     <div class="card">
-      <h2>👥 Joueurs</h2>
-      ${Object.keys(players).map(p => `<div>• ${p}</div>`).join("")}
+      <h2>👥 Joueurs connectés</h2>
+      ${getPlayerList().length
+        ? getPlayerList().map(p => `<div>• ${p}</div>`).join("")
+        : "<p>Aucun joueur</p>"
+      }
     </div>
 
     <div class="card">
@@ -111,33 +125,26 @@ function render() {
 }
 
 /* =========================
-   PHASE 1 — CATEGORY
+   GAME FLOW
 ========================= */
 
 async function startCategory() {
   await setPhase("category");
-
   await setDoc(doc(db, "game", "categoryVotes"), {});
+  await log("🎮 Start category vote");
 }
 
-/**
- * Choisit la catégorie gagnante
- */
 async function resolveCategory() {
   const counts = countVotes(categoryVotes);
-
   const top = getTopVotes(counts);
-
   const chosen = pickRandom(top);
 
   await setPhase("categoryResolved", {
     currentCategory: chosen
   });
-}
 
-/* =========================
-   PHASE 2 — ALBUM
-========================= */
+  await log(`⚡ Category resolved: ${chosen}`);
+}
 
 async function startAlbum() {
   if (!state.currentCategory) {
@@ -146,26 +153,14 @@ async function startAlbum() {
   }
 
   await setPhase("album");
-
   await setDoc(doc(db, "game", "albumVotes"), {});
+
+  await log("📀 Start album vote");
 }
 
 /* =========================
-   RESET
+   END GAME
 ========================= */
-
-async function reset() {
-  if (!confirm("RESET COMPLET DE LA SOIRÉE ?")) return;
-
-  await setPhase("lobby", {
-    currentCategory: null,
-    currentAlbum: null
-  });
-
-  await setDoc(doc(db, "game", "players"), {});
-  await setDoc(doc(db, "game", "categoryVotes"), {});
-  await setDoc(doc(db, "game", "albumVotes"), {});
-}
 
 async function finishGame() {
   await log("🏁 FIN DE PARTIE");
@@ -178,7 +173,7 @@ async function finishGame() {
     log(`${i + 1}. ${name} - ${score} points`);
   });
 
-  alert("Game finished — check logs");
+  alert("Game finished");
 }
 
 async function showRanking() {
@@ -191,4 +186,23 @@ async function showRanking() {
   });
 
   alert(text);
+}
+
+/* =========================
+   RESET
+========================= */
+
+async function reset() {
+  if (!confirm("RESET SOIRÉE ?")) return;
+
+  await setPhase("lobby", {
+    currentCategory: null,
+    currentAlbum: null
+  });
+
+  await setDoc(doc(db, "game", "players"), {});
+  await setDoc(doc(db, "game", "categoryVotes"), {});
+  await setDoc(doc(db, "game", "albumVotes"), {});
+
+  await log("🔄 RESET SOIRÉE");
 }

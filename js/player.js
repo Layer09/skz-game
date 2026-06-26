@@ -1,6 +1,5 @@
-import { db, doc, getDoc, setDoc, updateDoc, onSnapshot } from "./firebase.js";
+import { db, doc, setDoc, onSnapshot } from "./firebase.js";
 import { addPlayer, listenGame } from "./game.js";
-import { countVotes } from "./utils.js";
 
 const app = document.getElementById("app");
 
@@ -12,7 +11,7 @@ let categoryVotes = {};
 let albumVotes = {};
 
 /* =========================
-   INIT LIVE STATE
+   STATE
 ========================= */
 
 listenGame((s) => {
@@ -33,7 +32,7 @@ onSnapshot(doc(db, "game", "albumVotes"), snap => {
 });
 
 /* =========================
-   LOGIN
+   RENDER
 ========================= */
 
 function render() {
@@ -48,18 +47,17 @@ function render() {
   if (state.phase === "category") return renderCategory();
   if (state.phase === "album") return renderAlbum();
 
-  app.innerHTML = `<div class="card">En attente de l'admin...</div>`;
+  app.innerHTML = `<div class="card">En attente...</div>`;
 }
 
 /* =========================
-   LOGIN SCREEN
+   LOGIN
 ========================= */
 
 function renderLogin() {
   app.innerHTML = `
     <div class="card">
       <h2>Choisis ton prénom</h2>
-      <p>⚠️ un seul joueur par prénom</p>
     </div>
 
     <div class="card">
@@ -76,7 +74,7 @@ function renderLogin() {
       localStorage.setItem("player_name", name);
       render();
     } catch (e) {
-      alert("Nom déjà utilisé");
+      alert("Nom déjà pris");
     }
   };
 }
@@ -88,60 +86,58 @@ function renderLogin() {
 function renderLobby() {
   app.innerHTML = `
     <div class="card">
-      <h2>En attente de la partie</h2>
-      <p>Connecté en tant que <b>${me}</b></p>
+      <h2>En attente...</h2>
+      <p>${me}</p>
     </div>
   `;
 }
 
 /* =========================
-   CATEGORY VOTE
+   CATEGORY
 ========================= */
 
 function renderCategory() {
-  const alreadyVoted = categoryVotes[me];
+  const voted = categoryVotes[me];
 
   app.innerHTML = `
     <div class="card">
-      <h2>Catégorie d'album</h2>
-      ${alreadyVoted ? `<p>Vote enregistré ✔</p>` : ""}
+      <h2>Catégorie</h2>
     </div>
 
     <div class="card">
-      <button onclick="vote('old')">Anciens (2018-2020)</button>
-      <button onclick="vote('mid')">Mid Era (2021-2023)</button>
-      <button onclick="vote('recent')">Récents (2024-2026)</button>
+      <button onclick="vote('old')">Anciens</button>
+      <button onclick="vote('mid')">Mid</button>
+      <button onclick="vote('recent')">Récents</button>
     </div>
   `;
 
   window.vote = async (v) => {
     if (categoryVotes[me]) return;
 
-    await updateDoc(doc(db, "game", "categoryVotes"), {
+    await setDoc(doc(db, "game", "categoryVotes"), {
       [me]: v
-    });
+    }, { merge: true });
   };
 }
 
 /* =========================
-   ALBUM VOTE
+   ALBUM
 ========================= */
 
 function renderAlbum() {
-  const already = albumVotes[me];
+  const voted = albumVotes[me];
 
   const albums = state.availableAlbums || [];
 
   app.innerHTML = `
     <div class="card">
-      <h2>Choisis l'album</h2>
-      ${already ? `<p>Vote enregistré ✔</p>` : ""}
+      <h2>Albums</h2>
     </div>
 
     <div class="card">
       ${albums.map(a => `
         <button onclick="voteAlbum('${a.id}')">
-          📀 ${a.name} (${a.year})
+          ${a.name}
         </button>
       `).join("")}
     </div>
@@ -150,8 +146,8 @@ function renderAlbum() {
   window.voteAlbum = async (id) => {
     if (albumVotes[me]) return;
 
-    await updateDoc(doc(db, "game", "albumVotes"), {
+    await setDoc(doc(db, "game", "albumVotes"), {
       [me]: id
-    });
+    }, { merge: true });
   };
 }
