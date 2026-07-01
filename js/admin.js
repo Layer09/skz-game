@@ -16,6 +16,7 @@ let state = {};
 let players = {};
 let categoryVotes = {};
 let albumVotes = {};
+let voteResult = null;
 
 /* =========================
    LISTEN STATE
@@ -28,7 +29,7 @@ listenGame((s) => {
 
 onSnapshot(doc(db, "game", "players"), snap => {
   players = snap.data() || {};
-  render(); // 🔥 IMPORTANT FIX
+  render();
 });
 
 onSnapshot(doc(db, "game", "categoryVotes"), snap => {
@@ -38,6 +39,11 @@ onSnapshot(doc(db, "game", "categoryVotes"), snap => {
 
 onSnapshot(doc(db, "game", "albumVotes"), snap => {
   albumVotes = snap.data() || {};
+  render();
+});
+
+onSnapshot(doc(db, "game", "voteResult"), snap => {
+  voteResult = snap.data() || null;
   render();
 });
 
@@ -91,6 +97,22 @@ function render() {
       }
     </div>
 
+    ${voteResult ? `
+      <div class="card">
+        <h2>📊 Résultat du vote</h2>
+
+        ${Object.entries(voteResult.votes).map(([k,v]) => `
+          <div>${k} : ${v} votes</div>
+        `).join("")}
+
+        <hr>
+
+        <div>🎉 Gagnant : <b>${voteResult.winner}</b></div>
+
+        ${voteResult.tie ? `<div>🎲 Égalité → tirage aléatoire</div>` : ""}
+      </div>
+    ` : ""}
+
     <div class="card">
       <h2>🗳️ Votes catégorie</h2>
 
@@ -131,6 +153,7 @@ function render() {
 async function startCategory() {
   await setPhase("category");
   await setDoc(doc(db, "game", "categoryVotes"), {});
+  await setDoc(doc(db, "game", "voteResult"), null);
   await log("🎮 Start category vote");
 }
 
@@ -138,6 +161,13 @@ async function resolveCategory() {
   const counts = countVotes(categoryVotes);
   const top = getTopVotes(counts);
   const chosen = pickRandom(top);
+
+  await setDoc(doc(db, "game", "voteResult"), {
+    type: "category",
+    votes: counts,
+    winner: chosen,
+    tie: top.length > 1
+  });
 
   await setPhase("categoryResolved", {
     currentCategory: chosen
@@ -154,6 +184,7 @@ async function startAlbum() {
 
   await setPhase("album");
   await setDoc(doc(db, "game", "albumVotes"), {});
+  await setDoc(doc(db, "game", "voteResult"), null);
 
   await log("📀 Start album vote");
 }
@@ -203,6 +234,7 @@ async function reset() {
   await setDoc(doc(db, "game", "players"), {});
   await setDoc(doc(db, "game", "categoryVotes"), {});
   await setDoc(doc(db, "game", "albumVotes"), {});
+  await setDoc(doc(db, "game", "voteResult"), null);
 
   await log("🔄 RESET SOIRÉE");
 }

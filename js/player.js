@@ -9,6 +9,7 @@ let me = localStorage.getItem("player_name");
 let players = {};
 let categoryVotes = {};
 let albumVotes = {};
+let voteResult = null;
 
 /* =========================
    STATE
@@ -29,6 +30,11 @@ onSnapshot(doc(db, "game", "categoryVotes"), snap => {
 
 onSnapshot(doc(db, "game", "albumVotes"), snap => {
   albumVotes = snap.data() || {};
+});
+
+onSnapshot(doc(db, "game", "voteResult"), snap => {
+  voteResult = snap.data() || null;
+  render();
 });
 
 /* =========================
@@ -97,18 +103,32 @@ function renderLobby() {
 ========================= */
 
 function renderCategory() {
-  const voted = categoryVotes[me];
-
   app.innerHTML = `
     <div class="card">
       <h2>Catégorie</h2>
     </div>
 
     <div class="card">
-        <button onclick="vote('old')">Anciens (2018-2020)</button>
-        <button onclick="vote('mid')">Mid Era (2021-2023)</button>
-        <button onclick="vote('recent')">Récents (2024-2026)</button>
+      <button onclick="vote('old')">Anciens</button>
+      <button onclick="vote('mid')">Mid</button>
+      <button onclick="vote('recent')">Récents</button>
     </div>
+
+    ${voteResult ? `
+      <div class="card">
+        <h3>📊 Résultat du vote</h3>
+
+        ${Object.entries(voteResult.votes).map(([k,v]) => `
+          <div>${k} : ${v} votes</div>
+        `).join("")}
+
+        <hr>
+
+        <div>🎉 Gagnant : <b>${voteResult.winner}</b></div>
+
+        ${voteResult.tie ? `<div>🎲 Égalité → tirage</div>` : ""}
+      </div>
+    ` : ""}
   `;
 
   window.vote = async (v) => {
@@ -125,8 +145,6 @@ function renderCategory() {
 ========================= */
 
 function renderAlbum() {
-  const voted = albumVotes[me];
-
   const albums = state.availableAlbums || [];
 
   app.innerHTML = `
