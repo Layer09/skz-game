@@ -19,7 +19,7 @@ let albumVotes = {};
 let voteResult = null;
 
 /* =========================
-   LISTEN STATE
+   LISTENERS
 ========================= */
 
 listenGame((s) => {
@@ -101,7 +101,7 @@ function render() {
       <div class="card">
         <h2>📊 Résultat du vote</h2>
 
-        ${Object.entries(voteResult.votes).map(([k,v]) => `
+        ${Object.entries(voteResult.votes || {}).map(([k,v]) => `
           <div>${k} : ${v} votes</div>
         `).join("")}
 
@@ -115,11 +115,6 @@ function render() {
 
     <div class="card">
       <h2>🗳️ Votes catégorie</h2>
-
-      <p><b>Manquants:</b></p>
-      ${missingCategory.map(m => `<div style="color:red">• ${m}</div>`).join("")}
-
-      <p><b>Votes:</b></p>
       ${Object.entries(categoryVotes).map(([k,v]) => `
         <div>${k} → ${v}</div>
       `).join("")}
@@ -127,11 +122,6 @@ function render() {
 
     <div class="card">
       <h2>📀 Votes album</h2>
-
-      <p><b>Manquants:</b></p>
-      ${missingAlbum.map(m => `<div style="color:red">• ${m}</div>`).join("")}
-
-      <p><b>Votes:</b></p>
       ${Object.entries(albumVotes).map(([k,v]) => `
         <div>${k} → ${v}</div>
       `).join("")}
@@ -147,7 +137,7 @@ function render() {
 }
 
 /* =========================
-   GAME FLOW
+   FLOW
 ========================= */
 
 async function startCategory() {

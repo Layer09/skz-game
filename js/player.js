@@ -109,16 +109,16 @@ function renderCategory() {
     </div>
 
     <div class="card">
-      <button onclick="vote('old')">Anciens</button>
-      <button onclick="vote('mid')">Mid</button>
-      <button onclick="vote('recent')">Récents</button>
+      <button onclick="vote('old')">Anciens (2018-2020)</button>
+      <button onclick="vote('mid')">Mid Era (2021-2023)</button>
+      <button onclick="vote('recent')">Récents (2024-2026)</button>
     </div>
 
     ${voteResult ? `
       <div class="card">
         <h3>📊 Résultat du vote</h3>
 
-        ${Object.entries(voteResult.votes).map(([k,v]) => `
+        ${Object.entries(voteResult.votes || {}).map(([k,v]) => `
           <div>${k} : ${v} votes</div>
         `).join("")}
 
@@ -126,7 +126,7 @@ function renderCategory() {
 
         <div>🎉 Gagnant : <b>${voteResult.winner}</b></div>
 
-        ${voteResult.tie ? `<div>🎲 Égalité → tirage</div>` : ""}
+        ${voteResult.tie ? `<div>🎲 Égalité</div>` : ""}
       </div>
     ` : ""}
   `;
