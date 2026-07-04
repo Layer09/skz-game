@@ -18,7 +18,6 @@ const firebaseConfig = {
   storageBucket: "skz-album-game-69efe.firebasestorage.app",
   messagingSenderId: "347203878239",
   appId: "1:347203878239:web:768fba1b2e0802efd64aea",
-  measurementId: "G-6ZL80JM4XC"
 };
 
 const app = initializeApp(firebaseConfig);

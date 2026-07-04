@@ -52,8 +52,11 @@ onSnapshot(doc(db, "game", "voteResult"), snap => {
 ========================= */
 
 function getPlayerList() {
-  return Object.values(players)
-    .map(p => typeof p === "string" ? p : p.name);
+  return Object.values(players).map(p => p.name);
+}
+
+function missingVotes(votes) {
+  return Object.keys(players).filter(p => !votes[p]);
 }
 
 /* =========================
@@ -63,11 +66,8 @@ function getPlayerList() {
 function render() {
   if (!state) return;
 
-  const missingCategory = Object.keys(players)
-    .filter(p => !categoryVotes[p]);
-
-  const missingAlbum = Object.keys(players)
-    .filter(p => !albumVotes[p]);
+  const missingCategory = missingVotes(categoryVotes);
+  const missingAlbum = missingVotes(albumVotes);
 
   admin.innerHTML = `
     <div class="card">
@@ -86,15 +86,12 @@ function render() {
     <div class="card">
       <h2>📊 État</h2>
       <p>Phase: <b>${state.phase}</b></p>
-      <p>Round: ${state.round || 0}</p>
+      <p>Catégorie actuelle: <b>${state.currentCategory || "-"}</b></p>
     </div>
 
     <div class="card">
-      <h2>👥 Joueurs connectés</h2>
-      ${getPlayerList().length
-        ? getPlayerList().map(p => `<div>• ${p}</div>`).join("")
-        : "<p>Aucun joueur</p>"
-      }
+      <h2>👥 Joueurs</h2>
+      ${getPlayerList().map(p => `<div>• ${p}</div>`).join("")}
     </div>
 
     ${voteResult ? `
@@ -107,14 +104,18 @@ function render() {
 
         <hr>
 
-        <div>🎉 Gagnant : <b>${voteResult.winner}</b></div>
+        <div>🏆 Winner : <b>${voteResult.winner}</b></div>
 
-        ${voteResult.tie ? `<div>🎲 Égalité → tirage aléatoire</div>` : ""}
+        ${voteResult.tie ? `<div>🎲 Tie → random pick</div>` : ""}
       </div>
     ` : ""}
 
     <div class="card">
       <h2>🗳️ Votes catégorie</h2>
+      <p><b>Manquants:</b></p>
+      ${missingCategory.map(m => `<div style="color:red">• ${m}</div>`).join("")}
+
+      <p><b>Votes:</b></p>
       ${Object.entries(categoryVotes).map(([k,v]) => `
         <div>${k} → ${v}</div>
       `).join("")}
@@ -122,6 +123,10 @@ function render() {
 
     <div class="card">
       <h2>📀 Votes album</h2>
+      <p><b>Manquants:</b></p>
+      ${missingAlbum.map(m => `<div style="color:red">• ${m}</div>`).join("")}
+
+      <p><b>Votes:</b></p>
       ${Object.entries(albumVotes).map(([k,v]) => `
         <div>${k} → ${v}</div>
       `).join("")}
@@ -131,40 +136,49 @@ function render() {
   window.startCategory = startCategory;
   window.resolveCategory = resolveCategory;
   window.startAlbum = startAlbum;
-  window.reset = reset;
   window.finishGame = finishGame;
   window.showRanking = showRanking;
+  window.reset = reset;
 }
 
 /* =========================
-   FLOW
+   CATEGORY FLOW
 ========================= */
 
 async function startCategory() {
-  await setPhase("category");
+  await setPhase("category", {
+    currentCategory: null,
+    currentAlbum: null
+  });
+
   await setDoc(doc(db, "game", "categoryVotes"), {});
   await setDoc(doc(db, "game", "voteResult"), null);
+
   await log("🎮 Start category vote");
 }
 
 async function resolveCategory() {
   const counts = countVotes(categoryVotes);
   const top = getTopVotes(counts);
-  const chosen = pickRandom(top);
+  const winner = pickRandom(top);
 
   await setDoc(doc(db, "game", "voteResult"), {
     type: "category",
     votes: counts,
-    winner: chosen,
+    winner,
     tie: top.length > 1
   });
 
   await setPhase("categoryResolved", {
-    currentCategory: chosen
+    currentCategory: winner
   });
 
-  await log(`⚡ Category resolved: ${chosen}`);
+  await log(`⚡ Category resolved: ${winner}`);
 }
+
+/* =========================
+   ALBUM FLOW
+========================= */
 
 async function startAlbum() {
   if (!state.currentCategory) {
@@ -173,6 +187,7 @@ async function startAlbum() {
   }
 
   await setPhase("album");
+
   await setDoc(doc(db, "game", "albumVotes"), {});
   await setDoc(doc(db, "game", "voteResult"), null);
 
@@ -200,13 +215,9 @@ async function finishGame() {
 async function showRanking() {
   const ranking = await getFinalRanking();
 
-  let text = "CLASSEMENT FINAL\n\n";
-
-  ranking.forEach(([name, score], i) => {
-    text += `${i + 1}. ${name} - ${score}\n`;
-  });
-
-  alert(text);
+  alert(
+    ranking.map(([n,s], i) => `${i+1}. ${n} - ${s}`).join("\n")
+  );
 }
 
 /* =========================
