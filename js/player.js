@@ -22,17 +22,14 @@ listenGame((s) => {
 
 onSnapshot(doc(db, "game", "players"), snap => {
   players = snap.data() || {};
-  render();
 });
 
 onSnapshot(doc(db, "game", "categoryVotes"), snap => {
   categoryVotes = snap.data() || {};
-  render();
 });
 
 onSnapshot(doc(db, "game", "albumVotes"), snap => {
   albumVotes = snap.data() || {};
-  render();
 });
 
 onSnapshot(doc(db, "game", "voteResult"), snap => {
@@ -55,18 +52,21 @@ function render() {
   switch (state.phase) {
     case "lobby":
       return renderLobby();
+
     case "category":
     case "categoryResolved":
       return renderCategory();
+
     case "album":
       return renderAlbum();
+
     default:
       app.innerHTML = `<div class="card">En attente...</div>`;
   }
 }
 
 /* =========================
-   LOGIN FIX (ANTI DOUBLE NAME BUG)
+   LOGIN
 ========================= */
 
 function renderLogin() {
@@ -109,7 +109,7 @@ function renderLobby() {
 }
 
 /* =========================
-   CATEGORY (FIX VOTE BLOQUÉ)
+   CATEGORY
 ========================= */
 
 function renderCategory() {
@@ -153,19 +153,40 @@ function renderCategory() {
 }
 
 /* =========================
-   ALBUM (FIX UI + BLOQUAGE + SAFE STATE)
+   ALBUM (FIX FINAL ROBUSTE)
 ========================= */
 
 function renderAlbum() {
   const albums = state.availableAlbums || [];
 
-  const filtered = albums.filter(a => a.era === state.currentCategory);
+  const category = state.currentCategory;
+
+  if (!category) {
+    app.innerHTML = `
+      <div class="card">
+        <h2>⏳ En attente de la catégorie...</h2>
+      </div>
+    `;
+    return;
+  }
+
+  const filtered = albums.filter(a => a.era === category);
+
+  if (!filtered.length) {
+    app.innerHTML = `
+      <div class="card">
+        <h2>⚠️ Aucun album disponible</h2>
+        <p>Catégorie : ${category}</p>
+      </div>
+    `;
+    return;
+  }
 
   const alreadyVoted = albumVotes?.[me];
 
   app.innerHTML = `
     <div class="card">
-      <h2>📀 Albums (${state.currentCategory})</h2>
+      <h2>📀 Albums (${category})</h2>
     </div>
 
     ${filtered.map(a => `
