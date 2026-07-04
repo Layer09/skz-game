@@ -162,6 +162,11 @@ async function resolveCategory() {
   const top = getTopVotes(counts);
   const winner = pickRandom(top);
 
+  if (!winner) {
+    console.error("No winner computed");
+    return;
+  }
+
   await setDoc(doc(db, "game", "voteResult"), {
     type: "category",
     votes: counts,
@@ -169,7 +174,7 @@ async function resolveCategory() {
     tie: top.length > 1
   });
 
-  await setPhase("categoryResolved", {
+  await setPhase("album", {
     currentCategory: winner
   });
 
