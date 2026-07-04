@@ -1,6 +1,8 @@
 import { db, doc, setDoc, onSnapshot } from "./firebase.js";
 import { addPlayer, listenGame } from "./game.js";
 
+import albumsData from "../data/albums.json" assert { type: "json" };
+
 const app = document.getElementById("app");
 
 let state = null;
@@ -16,20 +18,23 @@ let voteResult = null;
 ========================= */
 
 listenGame((s) => {
-  state = s;
+  state = s || {};
   render();
 });
 
 onSnapshot(doc(db, "game", "players"), snap => {
   players = snap.data() || {};
+  render();
 });
 
 onSnapshot(doc(db, "game", "categoryVotes"), snap => {
   categoryVotes = snap.data() || {};
+  render();
 });
 
 onSnapshot(doc(db, "game", "albumVotes"), snap => {
   albumVotes = snap.data() || {};
+  render();
 });
 
 onSnapshot(doc(db, "game", "voteResult"), snap => {
@@ -72,7 +77,7 @@ function render() {
 function renderLogin() {
   const usedNames = Object.values(players).map(p => p.name);
 
-  const available = ["Alice","Bob","Charlie","Emma","Julie"]
+  const available = ["Alice", "Bob", "Charlie", "Emma", "Julie"]
     .filter(n => !usedNames.includes(n));
 
   app.innerHTML = `
@@ -135,8 +140,8 @@ function renderCategory() {
     </div>
 
     <div class="card">
-      <h3>📡 Votes en cours</h3>
-      ${Object.entries(categoryVotes).map(([k,v]) => `
+      <h3>Votes en cours</h3>
+      ${Object.entries(categoryVotes).map(([k, v]) => `
         <div>${k} → ${v}</div>
       `).join("")}
     </div>
@@ -153,36 +158,26 @@ function renderCategory() {
 }
 
 /* =========================
-   ALBUM (FIX FINAL ROBUSTE)
+   ALBUM (FIX FINAL)
 ========================= */
 
 function renderAlbum() {
-  const albums = state.availableAlbums || [];
-
   const category = (state.currentCategory || "").trim();
 
-  if (!category) {
-    app.innerHTML = `
-      <div class="card">
-        <h2>⏳ En attente de la catégorie...</h2>
-      </div>
-    `;
-    return;
-  }
+  const filtered = albumsData.filter(a => a.era === category);
 
-  const filtered = albums.filter(a => a.era === category);
+  const alreadyVoted = albumVotes?.[me];
 
   if (!filtered.length) {
     app.innerHTML = `
       <div class="card">
-        <h2>⚠️ Aucun album disponible</h2>
-        <p>Catégorie : ${category}</p>
+        <h2>📀 Albums</h2>
+        <p>⚠️ Aucun album disponible</p>
+        <p>Catégorie : <b>${category}</b></p>
       </div>
     `;
     return;
   }
-
-  const alreadyVoted = albumVotes?.[me];
 
   app.innerHTML = `
     <div class="card">
@@ -200,13 +195,6 @@ function renderAlbum() {
         </button>
       </div>
     `).join("")}
-
-    <div class="card">
-      <h3>📡 Votes</h3>
-      ${Object.entries(albumVotes).map(([k,v]) => `
-        <div>${k} → ${v}</div>
-      `).join("")}
-    </div>
   `;
 
   window.voteAlbum = async (id) => {
