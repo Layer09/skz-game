@@ -1,88 +1,49 @@
 import { db, doc, setDoc, onSnapshot } from "./firebase.js";
-import { addPlayer, listenGame } from "./game.js";
+import { listenState, listenPlayers, listenVotes, addPlayer } from "./game.js";
+import { loadAlbums } from "./albums.js";
 
 const app = document.getElementById("app");
 
 let state = null;
+let players = {};
+let votes = {};
 let me = localStorage.getItem("player_name");
 
-let players = {};
-let categoryVotes = {};
-let albumVotes = {};
-let voteResult = null;
-
 /* =========================
-   ALBUMS (DYNAMIC LOAD)
+   LISTENERS
 ========================= */
 
-let albumsData = [];
-
-async function loadAlbums() {
-  if (albumsData.length) return;
-
-  try {
-    const res = await fetch("./data/albums.json");
-    albumsData = await res.json();
-  } catch (e) {
-    console.error("Erreur chargement albums.json", e);
-    albumsData = [];
-  }
-}
-
-/* =========================
-   LISTEN STATE
-========================= */
-
-listenGame((s) => {
-  state = s || {};
-  render().catch(console.error);
+listenState(s => {
+  state = s;
+  render();
 });
 
-onSnapshot(doc(db, "game", "players"), snap => {
-  players = snap.data() || {};
-  render().catch(console.error);
+listenPlayers(p => {
+  players = p;
+  render();
 });
 
-onSnapshot(doc(db, "game", "categoryVotes"), snap => {
-  categoryVotes = snap.data() || {};
-  render().catch(console.error);
-});
-
-onSnapshot(doc(db, "game", "albumVotes"), snap => {
-  albumVotes = snap.data() || {};
-  render().catch(console.error);
-});
-
-onSnapshot(doc(db, "game", "voteResult"), snap => {
-  voteResult = snap.data() || null;
-  render().catch(console.error);
+listenVotes(v => {
+  votes = v;
+  render();
 });
 
 /* =========================
-   ROOT RENDER
+   ROOT
 ========================= */
 
-async function render() {
-  await loadAlbums();
-
+function render() {
   if (!me) return renderLogin();
-
-  if (!state) {
-    app.innerHTML = `<div class="card">Chargement...</div>`;
-    return;
-  }
+  if (!state) return renderLoading();
 
   switch (state.phase) {
     case "lobby":
       return renderLobby();
-
     case "category":
     case "categoryResolved":
       return renderCategory();
-
     case "album":
       return renderAlbum();
-
     default:
       app.innerHTML = `<div class="card">En attente...</div>`;
   }
@@ -93,10 +54,10 @@ async function render() {
 ========================= */
 
 function renderLogin() {
-  const usedNames = Object.values(players).map(p => p.name);
+  const used = Object.values(players).map(p => p.name);
 
   const available = ["Alice", "Bob", "Charlie", "Emma", "Julie"]
-    .filter(n => !usedNames.includes(n));
+    .filter(n => !used.includes(n));
 
   app.innerHTML = `
     <div class="card">
@@ -104,17 +65,27 @@ function renderLogin() {
     </div>
 
     <div class="card">
-      ${available.map(name => `
-        <button onclick="select('${name}')">${name}</button>
+      ${available.map(n => `
+        <button onclick="select('${n}')">${n}</button>
       `).join("")}
     </div>
   `;
 
   window.select = async (name) => {
-    await addPlayer(name);
-    me = name;
-    localStorage.setItem("player_name", name);
-    render().catch(console.error);
+    const player = {
+      id: name,
+      name,
+      color: getColor(name)
+    };
+
+    try {
+      await addPlayer(player);
+      me = name;
+      localStorage.setItem("player_name", name);
+      render();
+    } catch (e) {
+      alert("Nom déjà pris");
+    }
   };
 }
 
@@ -132,11 +103,11 @@ function renderLobby() {
 }
 
 /* =========================
-   CATEGORY
+   CATEGORY VOTE (MODIFIABLE)
 ========================= */
 
 function renderCategory() {
-  const alreadyVoted = categoryVotes?.[me];
+  const myVote = votes.category?.[me];
 
   app.innerHTML = `
     <div class="card">
@@ -144,54 +115,61 @@ function renderCategory() {
     </div>
 
     <div class="card">
-      <button ${alreadyVoted ? "disabled" : ""} onclick="vote('old')">
-        Anciens (2018-2020)
-      </button>
-
-      <button ${alreadyVoted ? "disabled" : ""} onclick="vote('mid')">
-        Mid Era (2021-2023)
-      </button>
-
-      <button ${alreadyVoted ? "disabled" : ""} onclick="vote('recent')">
-        Récents (2024-2026)
-      </button>
-    </div>
-
-    <div class="card">
-      <h3>Votes en cours</h3>
-      ${Object.entries(categoryVotes).map(([k, v]) => `
-        <div>${k} → ${v}</div>
-      `).join("")}
+      ${voteBtn("old", "Anciens (2018-2020)", myVote)}
+      ${voteBtn("mid", "Mid Era (2021-2023)", myVote)}
+      ${voteBtn("recent", "Récents (2024-2026)", myVote)}
     </div>
   `;
-
-  window.vote = async (v) => {
-    if (categoryVotes?.[me]) return;
-
-    await setDoc(doc(db, "game", "categoryVotes"), {
-      ...categoryVotes,
-      [me]: v
-    }, { merge: true });
-  };
 }
 
+function voteBtn(value, label, myVote) {
+  const player = players[me];
+  const color = player?.color?.secondary || "#444";
+
+  const active = myVote === value;
+
+  return `
+    <button
+      onclick="voteCategory('${value}')"
+      style="background:${active ? color : '#2a2a2a'}"
+    >
+      ${label}
+    </button>
+  `;
+}
+
+window.voteCategory = async (value) => {
+  const current = votes.category || {};
+
+  await setDoc(doc(db, "game", "votes"), {
+    ...votes,
+    category: {
+      ...current,
+      [me]: value
+    }
+  }, { merge: true });
+};
+
 /* =========================
-   ALBUM (FIX FINAL STABLE)
+   ALBUM VOTE (FIX BUG + FILTER OK)
 ========================= */
 
-function renderAlbum() {
-  const category = (state.currentCategory || "").trim();
+async function renderAlbum() {
+  const albums = await loadAlbums();
 
-  const filtered = (albumsData || []).filter(a => a.era === category);
+  const opened = state.openedAlbums || [];
 
-  const alreadyVoted = albumVotes?.[me];
+  const filtered = albums.filter(a =>
+    a.era === state.currentCategory &&
+    !opened.includes(a.id)
+  );
 
-  if (!filtered.length) {
+  const myVote = votes.album?.[me];
+
+  if (filtered.length === 0) {
     app.innerHTML = `
       <div class="card">
-        <h2>📀 Albums</h2>
-        <p>⚠️ Aucun album disponible</p>
-        <p>Catégorie : <b>${category}</b></p>
+        ⚠️ Aucun album disponible
       </div>
     `;
     return;
@@ -199,28 +177,62 @@ function renderAlbum() {
 
   app.innerHTML = `
     <div class="card">
-      <h2>📀 Albums (${category})</h2>
+      <h2>📀 Albums (${state.currentCategory})</h2>
     </div>
 
-    ${filtered.map(a => `
-      <div class="card">
-        <img src="${a.cover}" style="width:100%;border-radius:12px">
-        <h3>${a.name}</h3>
-        <p>${a.year}</p>
-
-        <button ${alreadyVoted ? "disabled" : ""} onclick="voteAlbum('${a.id}')">
-          Voter
-        </button>
-      </div>
-    `).join("")}
+    ${filtered.map(a => albumCard(a, myVote)).join("")}
   `;
+}
 
-  window.voteAlbum = async (id) => {
-    if (albumVotes?.[me]) return;
+function albumCard(a, myVote) {
+  const active = myVote === a.id;
 
-    await setDoc(doc(db, "game", "albumVotes"), {
-      ...albumVotes,
+  return `
+    <div class="card">
+      <img src="${a.cover}" style="width:100%;border-radius:12px">
+
+      <h3>${a.name}</h3>
+      <p>${a.year}</p>
+
+      <button
+        onclick="voteAlbum('${a.id}')"
+        style="background:${active ? '#8B1E1E' : '#2a2a2a'}"
+      >
+        Voter
+      </button>
+    </div>
+  `;
+}
+
+window.voteAlbum = async (id) => {
+  const current = votes.album || {};
+
+  await setDoc(doc(db, "game", "votes"), {
+    ...votes,
+    album: {
+      ...current,
       [me]: id
-    }, { merge: true });
+    }
+  }, { merge: true });
+};
+
+/* =========================
+   HELPERS
+========================= */
+
+function renderLoading() {
+  app.innerHTML = `<div class="card">Chargement...</div>`;
+}
+
+/* simple deterministic colors (temp V4) */
+function getColor(name) {
+  const map = {
+    Alice: { primary: "#7EC8E3", secondary: "#2B4F81" },
+    Bob: { primary: "#FF6B6B", secondary: "#8B1E1E" },
+    Charlie: { primary: "#4CAF50", secondary: "#1B5E20" },
+    Emma: { primary: "#B388FF", secondary: "#4A148C" },
+    Julie: { primary: "#FF80AB", secondary: "#AD1457" }
   };
+
+  return map[name] || { primary: "#999", secondary: "#444" };
 }

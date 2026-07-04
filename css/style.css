@@ -6,10 +6,12 @@ body {
 }
 
 .card {
-  margin: 12px;
-  padding: 16px;
-  background: #1c1c1c;
-  border-radius: 16px;
+  max-width: 600px;
+  margin: 12px auto;
+}
+
+button:active {
+  transform: scale(0.98);
 }
 
 button {
@@ -23,6 +25,3 @@ button {
   color: white;
 }
 
-button:active {
-  transform: scale(0.98);
-}

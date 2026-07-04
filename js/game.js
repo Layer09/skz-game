@@ -1,28 +1,15 @@
-import { db, doc, getDoc, setDoc, updateDoc, onSnapshot } from "./firebase.js";
+import { db, doc, onSnapshot, getDoc, updateDoc } from "./firebase.js";
 import { initGame } from "./init.js";
 
 await initGame();
 
 /* =========================
-   STATE LIVE
+   STATE GLOBAL
 ========================= */
 
-export function listenGame(callback) {
+export function listenState(cb) {
   return onSnapshot(doc(db, "game", "state"), snap => {
-    callback(snap.data());
-  });
-}
-
-/* =========================
-   SET PHASE SAFE
-========================= */
-
-export async function setPhase(phase, data = {}) {
-  const ref = doc(db, "game", "state");
-
-  await updateDoc(ref, {
-    phase,
-    ...data
+    cb(snap.data());
   });
 }
 
@@ -30,21 +17,65 @@ export async function setPhase(phase, data = {}) {
    PLAYERS
 ========================= */
 
-export async function addPlayer(name) {
+export function listenPlayers(cb) {
+  return onSnapshot(doc(db, "game", "players"), snap => {
+    cb(snap.data() || {});
+  });
+}
+
+/* =========================
+   VOTES
+========================= */
+
+export function listenVotes(cb) {
+  return onSnapshot(doc(db, "game", "votes"), snap => {
+    cb(snap.data() || {});
+  });
+}
+
+/* =========================
+   UPDATE STATE
+========================= */
+
+export async function setState(data) {
+  const ref = doc(db, "game", "state");
+  await updateDoc(ref, data);
+}
+
+/* =========================
+   PLAYERS
+========================= */
+
+export async function addPlayer(player) {
   const ref = doc(db, "game", "players");
   const snap = await getDoc(ref);
 
   const players = snap.data() || {};
 
-  if (Object.values(players).some(p => p?.name === name)) {
-    throw new Error("Name already taken");
-  }
+  const exists = Object.values(players).find(p => p.name === player.name);
+  if (exists) throw new Error("NAME_TAKEN");
 
-  await setDoc(ref, {
-    ...players,
-    [name]: {
-      name,
-      joinedAt: Date.now()
-    }
+  players[player.id] = player;
+
+  await setDoc(ref, players);
+}
+
+/* =========================
+   RESET
+========================= */
+
+export async function resetGame() {
+  await setDoc(doc(db, "game", "state"), {
+    phase: "lobby",
+    round: 0,
+    currentCategory: null,
+    currentAlbum: null,
+    openedAlbums: [],
+    locked: false,
+    voteResult: null
   });
+
+  await setDoc(doc(db, "game", "players"), {});
+  await setDoc(doc(db, "game", "votes"), {});
+  await setDoc(doc(db, "game", "scores"), {});
 }

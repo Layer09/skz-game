@@ -1,61 +1,33 @@
-import {
-  db,
-  doc,
-  setDoc,
-  onSnapshot
-} from "./firebase.js";
-
-import { listenGame, setPhase } from "./game.js";
+import { db, doc, setDoc, onSnapshot } from "./firebase.js";
+import { listenState, listenPlayers, listenVotes, setState } from "./game.js";
+import { loadAlbums } from "./albums.js";
 import { countVotes, getTopVotes, pickRandom } from "./utils.js";
 import { log } from "./logs.js";
-import { getFinalRanking } from "./endgame.js";
 
 const admin = document.getElementById("admin");
 
-let state = {};
+let state = null;
 let players = {};
-let categoryVotes = {};
-let albumVotes = {};
-let voteResult = null;
+let votes = {};
 
 /* =========================
    LISTENERS
 ========================= */
 
-listenGame((s) => {
-  state = s || {};
+listenState(s => {
+  state = s;
   render();
 });
 
-onSnapshot(doc(db, "game", "players"), snap => {
-  players = snap.data() || {};
+listenPlayers(p => {
+  players = p;
   render();
 });
 
-onSnapshot(doc(db, "game", "categoryVotes"), snap => {
-  categoryVotes = snap.data() || {};
+listenVotes(v => {
+  votes = v;
   render();
 });
-
-onSnapshot(doc(db, "game", "albumVotes"), snap => {
-  albumVotes = snap.data() || {};
-  render();
-});
-
-onSnapshot(doc(db, "game", "voteResult"), snap => {
-  voteResult = snap.data() || null;
-  render();
-});
-
-/* =========================
-   HELPERS
-========================= */
-
-function getPlayerList() {
-  return Object.values(players).map(p =>
-    typeof p === "string" ? p : p.name
-  );
-}
 
 /* =========================
    RENDER
@@ -64,107 +36,79 @@ function getPlayerList() {
 function render() {
   if (!state) return;
 
-  const missingCategory = Object.keys(players)
-    .filter(p => !categoryVotes[p]);
-
-  const missingAlbum = Object.keys(players)
-    .filter(p => !albumVotes[p]);
+  const categoryVotes = votes.category || {};
+  const albumVotes = votes.album || {};
 
   admin.innerHTML = `
     <div class="card">
-      <h1>👑 ADMIN PANEL</h1>
+      <h1>👑 ADMIN V4</h1>
 
-      <button onclick="startCategory()">▶ Start Category Vote</button>
+      <button onclick="startCategory()">▶ Start Category</button>
       <button onclick="resolveCategory()">⚡ Resolve Category</button>
-      <button onclick="startAlbum()">▶ Start Album Vote</button>
 
-      <button onclick="finishGame()">🏁 Finish Game</button>
-      <button onclick="showRanking()">📊 Show Ranking</button>
+      <button onclick="startAlbum()">▶ Start Album</button>
+      <button onclick="resolveAlbum()">📀 Resolve Album</button>
 
-      <button onclick="reset()">🔄 RESET SOIRÉE</button>
+      <button onclick="resetGame()">🔄 RESET</button>
     </div>
 
     <div class="card">
-      <h2>📊 État</h2>
-      <p>Phase: <b>${state.phase}</b></p>
-      <p>Category: ${state.currentCategory || "-"}</p>
+      <h2>📊 STATE</h2>
+      <p>Phase: ${state.phase}</p>
+      <p>Catégorie: ${state.currentCategory || "-"}</p>
     </div>
 
     <div class="card">
       <h2>👥 Joueurs</h2>
-      ${getPlayerList().length
-        ? getPlayerList().map(p => `<div>• ${p}</div>`).join("")
-        : "<p>Aucun joueur</p>"
-      }
-    </div>
-
-    ${voteResult ? `
-      <div class="card">
-        <h2>📊 Résultat du vote</h2>
-
-        ${Object.entries(voteResult.votes || {}).map(([k,v]) => `
-          <div>${k} : ${v} votes</div>
-        `).join("")}
-
-        <hr>
-
-        <div>🏆 Winner : <b>${voteResult.winner || "?"}</b></div>
-
-        ${voteResult.tie ? `<div>🎲 Égalité → tirage aléatoire</div>` : ""}
-      </div>
-    ` : ""}
-
-    <div class="card">
-      <h2>🗳️ Votes catégorie</h2>
-      ${Object.entries(categoryVotes).map(([k,v]) => `
-        <div>${k} → ${v}</div>
-      `).join("")}
+      ${Object.values(players).map(p => `<div>• ${p.name}</div>`).join("")}
     </div>
 
     <div class="card">
-      <h2>📀 Votes album</h2>
-      ${Object.entries(albumVotes).map(([k,v]) => `
-        <div>${k} → ${v}</div>
-      `).join("")}
+      <h2>🗳 Category votes</h2>
+      ${Object.entries(categoryVotes).map(([k,v]) =>
+        `<div>${k} → ${v}</div>`
+      ).join("")}
+    </div>
+
+    <div class="card">
+      <h2>📀 Album votes</h2>
+      ${Object.entries(albumVotes).map(([k,v]) =>
+        `<div>${k} → ${v}</div>`
+      ).join("")}
     </div>
   `;
 
   window.startCategory = startCategory;
   window.resolveCategory = resolveCategory;
   window.startAlbum = startAlbum;
-  window.reset = reset;
-  window.finishGame = finishGame;
-  window.showRanking = showRanking;
+  window.resolveAlbum = resolveAlbum;
+  window.resetGame = resetGame;
 }
 
-/* =========================
-   FLOW
-========================= */
-
 async function startCategory() {
-  await setPhase("category");
+  await setState({
+    phase: "category",
+    currentCategory: null,
+    currentAlbum: null
+  });
 
-  await setDoc(doc(db, "game", "categoryVotes"), {});
-  await setDoc(doc(db, "game", "voteResult"), {});
+  await setDoc(doc(db, "game", "votes"), {
+    category: {},
+    album: {}
+  });
 
   await log("🎮 Start category vote");
 }
 
 async function resolveCategory() {
+  const categoryVotes = votes.category || {};
+
   const counts = countVotes(categoryVotes);
   const top = getTopVotes(counts);
   const winner = pickRandom(top);
 
-  if (!winner) return;
-
-  await setDoc(doc(db, "game", "voteResult"), {
-    type: "category",
-    votes: counts,
-    winner,
-    tie: top.length > 1
-  });
-
-  await setPhase("album", {
+  await setState({
+    phase: "categoryResolved",
     currentCategory: winner
   });
 
@@ -173,64 +117,91 @@ async function resolveCategory() {
 
 async function startAlbum() {
   if (!state.currentCategory) {
-    alert("Résous la catégorie d'abord");
+    alert("Resolve category first");
     return;
   }
 
-  await setPhase("album");
-
-  await setDoc(doc(db, "game", "albumVotes"), {});
-  await setDoc(doc(db, "game", "voteResult"), {});
-
-  await log("📀 Start album vote");
-}
-
-/* =========================
-   END GAME
-========================= */
-
-async function finishGame() {
-  await log("🏁 FIN DE PARTIE");
-
-  const ranking = await getFinalRanking();
-
-  await log("----- CLASSEMENT FINAL -----");
-
-  ranking.forEach(([name, score], i) => {
-    log(`${i + 1}. ${name} - ${score} points`);
+  await setState({
+    phase: "album"
   });
 
-  alert("Game finished");
-}
-
-async function showRanking() {
-  const ranking = await getFinalRanking();
-
-  let text = "CLASSEMENT FINAL\n\n";
-
-  ranking.forEach(([name, score], i) => {
-    text += `${i + 1}. ${name} - ${score}\n`;
+  await setDoc(doc(db, "game", "votes"), {
+    ...votes,
+    album: {}
   });
 
-  alert(text);
+  await log("▶ Start album vote");
 }
 
-/* =========================
-   RESET
-========================= */
+async function resolveAlbum() {
+  const albums = await loadAlbums();
 
-async function reset() {
-  if (!confirm("RESET SOIRÉE ?")) return;
+  const albumVotes = votes.album || {};
 
-  await setPhase("lobby", {
+  const counts = countVotes(albumVotes);
+  const top = getTopVotes(counts);
+
+  const winner = pickRandom(top);
+
+  const opened = state.openedAlbums || [];
+
+  const updatedOpened = [...opened, winner];
+
+  await setState({
+    phase: "albumResolved",
+    currentAlbum: winner,
+    openedAlbums: updatedOpened
+  });
+
+  await log(`📀 Album resolved: ${winner}`);
+}
+
+async function resetGame() {
+  if (!confirm("RESET COMPLET ?")) return;
+
+  await setState({
+    phase: "lobby",
+    round: 0,
     currentCategory: null,
-    currentAlbum: null
+    currentAlbum: null,
+    openedAlbums: [],
+    locked: false,
+    voteResult: null
   });
 
   await setDoc(doc(db, "game", "players"), {});
-  await setDoc(doc(db, "game", "categoryVotes"), {});
-  await setDoc(doc(db, "game", "albumVotes"), {});
-  await setDoc(doc(db, "game", "voteResult"), {});
+  await setDoc(doc(db, "game", "votes"), {
+    category: {},
+    album: {}
+  });
 
-  await log("🔄 RESET SOIRÉE");
+  await setDoc(doc(db, "game", "scores"), {});
+
+  await log("🔄 RESET GAME");
+}
+
+async function endRound() {
+  const categoryWinner = state.currentCategory;
+  const albumWinner = state.currentAlbum;
+
+  const categoryVotes = votes.category || {};
+  const albumVotes = votes.album || {};
+
+  const results = {};
+
+  Object.keys(players).forEach(p => {
+    results[p] = {
+      categoryCorrect: categoryVotes[p] === categoryWinner,
+      albumCorrect: albumVotes[p] === albumWinner
+    };
+  });
+
+  await addRoundScores(results);
+
+  await log("🏁 Round terminé + scores calculés");
+
+  await setDoc(doc(db, "game", "votes"), {
+    category: {},
+    album: {}
+  });
 }

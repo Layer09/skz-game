@@ -2,32 +2,28 @@ import { db, doc, getDoc, setDoc } from "./firebase.js";
 
 export async function initGame() {
   const stateRef = doc(db, "game", "state");
-  const snap = await getDoc(stateRef);
+  const stateSnap = await getDoc(stateRef);
 
-  if (!snap.exists()) {
+  if (!stateSnap.exists()) {
     await setDoc(stateRef, {
       phase: "lobby",
       round: 0,
       currentCategory: null,
       currentAlbum: null,
-      availableAlbums: [],
+      openedAlbums: [],
+      locked: false,
+      voteResult: null,
       createdAt: Date.now()
     });
   }
 
-  const docs = [
-    "players",
-    "categoryVotes",
-    "albumVotes",
-    "photoVotes",
-    "scores",
-    "voteResult"
-  ];
+  const docs = ["players", "votes", "scores", "logs"];
 
   for (const d of docs) {
     const ref = doc(db, "game", d);
-    const s = await getDoc(ref);
-    if (!s.exists()) {
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) {
       await setDoc(ref, {});
     }
   }

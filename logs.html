@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Logs</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <div class="card">
+    <h1>📜 Logs Live</h1>
+    <div id="logs"></div>
+  </div>
+
+  <script type="module">
+    import { db, collection, onSnapshot } from "./js/firebase.js";
+
+    const logsDiv = document.getElementById("logs");
+
+    onSnapshot(collection(db, "logs"), snap => {
+      logsDiv.innerHTML = snap.docs
+        .map(d => `<div>• ${d.data().text}</div>`)
+        .reverse()
+        .join("");
+    });
+  </script>
+
+</body>
+</html>
