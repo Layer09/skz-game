@@ -159,7 +159,7 @@ function renderCategory() {
 function renderAlbum() {
   const albums = state.availableAlbums || [];
 
-  const category = state.currentCategory;
+  const category = (state.currentCategory || "").trim();
 
   if (!category) {
     app.innerHTML = `
