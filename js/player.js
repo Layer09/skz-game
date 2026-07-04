@@ -1,8 +1,6 @@
 import { db, doc, setDoc, onSnapshot } from "./firebase.js";
 import { addPlayer, listenGame } from "./game.js";
 
-import albumsData from "../data/albums.json" assert { type: "json" };
-
 const app = document.getElementById("app");
 
 let state = null;
@@ -14,39 +12,59 @@ let albumVotes = {};
 let voteResult = null;
 
 /* =========================
+   ALBUMS (DYNAMIC LOAD)
+========================= */
+
+let albumsData = [];
+
+async function loadAlbums() {
+  if (albumsData.length) return;
+
+  try {
+    const res = await fetch("./data/albums.json");
+    albumsData = await res.json();
+  } catch (e) {
+    console.error("Erreur chargement albums.json", e);
+    albumsData = [];
+  }
+}
+
+/* =========================
    LISTEN STATE
 ========================= */
 
 listenGame((s) => {
   state = s || {};
-  render();
+  render().catch(console.error);
 });
 
 onSnapshot(doc(db, "game", "players"), snap => {
   players = snap.data() || {};
-  render();
+  render().catch(console.error);
 });
 
 onSnapshot(doc(db, "game", "categoryVotes"), snap => {
   categoryVotes = snap.data() || {};
-  render();
+  render().catch(console.error);
 });
 
 onSnapshot(doc(db, "game", "albumVotes"), snap => {
   albumVotes = snap.data() || {};
-  render();
+  render().catch(console.error);
 });
 
 onSnapshot(doc(db, "game", "voteResult"), snap => {
   voteResult = snap.data() || null;
-  render();
+  render().catch(console.error);
 });
 
 /* =========================
    ROOT RENDER
 ========================= */
 
-function render() {
+async function render() {
+  await loadAlbums();
+
   if (!me) return renderLogin();
 
   if (!state) {
@@ -96,7 +114,7 @@ function renderLogin() {
     await addPlayer(name);
     me = name;
     localStorage.setItem("player_name", name);
-    render();
+    render().catch(console.error);
   };
 }
 
@@ -158,13 +176,13 @@ function renderCategory() {
 }
 
 /* =========================
-   ALBUM (FIX FINAL)
+   ALBUM (FIX FINAL STABLE)
 ========================= */
 
 function renderAlbum() {
   const category = (state.currentCategory || "").trim();
 
-  const filtered = albumsData.filter(a => a.era === category);
+  const filtered = (albumsData || []).filter(a => a.era === category);
 
   const alreadyVoted = albumVotes?.[me];
 
