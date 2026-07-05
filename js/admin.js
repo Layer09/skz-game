@@ -40,43 +40,56 @@ function render() {
   const albumVotes = votes.album || {};
 
   admin.innerHTML = `
-    <div class="card">
-      <h1>👑 ADMIN V4</h1>
+  <div class="card">
+    <h1>👑 ADMIN V5 CONTROL</h1>
 
-      <button onclick="startCategory()">▶ Start Category</button>
-      <button onclick="resolveCategory()">⚡ Resolve Category</button>
+    <button onclick="startCategory()">▶ Start Category</button>
+    <button onclick="resolveCategory()">⚡ Resolve Category</button>
 
-      <button onclick="startAlbum()">▶ Start Album</button>
-      <button onclick="resolveAlbum()">📀 Resolve Album</button>
+    <button onclick="startAlbum()">▶ Start Album</button>
+    <button onclick="resolveAlbum()">📀 Resolve Album</button>
 
-      <button onclick="resetGame()">🔄 RESET</button>
-    </div>
+    <hr>
 
-    <div class="card">
-      <h2>📊 STATE</h2>
-      <p>Phase: ${state.phase}</p>
-      <p>Catégorie: ${state.currentCategory || "-"}</p>
-    </div>
+    <button onclick="endRound()">🏁 End Round (Score)</button>
+    <button onclick="nextRound()">⏭ Next Round</button>
 
-    <div class="card">
-      <h2>👥 Joueurs</h2>
-      ${Object.values(players).map(p => `<div>• ${p.name}</div>`).join("")}
-    </div>
+    <hr>
 
-    <div class="card">
-      <h2>🗳 Category votes</h2>
-      ${Object.entries(categoryVotes).map(([k,v]) =>
-        `<div>${k} → ${v}</div>`
-      ).join("")}
-    </div>
+    <button onclick="lockVotes()">🔒 Lock Votes</button>
+    <button onclick="unlockVotes()">🔓 Unlock Votes</button>
 
-    <div class="card">
-      <h2>📀 Album votes</h2>
-      ${Object.entries(albumVotes).map(([k,v]) =>
-        `<div>${k} → ${v}</div>`
-      ).join("")}
-    </div>
-  `;
+    <hr>
+
+    <button onclick="resetGame()">🔄 RESET</button>
+  </div>
+
+  <div class="card">
+    <h2>📊 STATE</h2>
+    <p>Phase: ${state.phase}</p>
+    <p>Category: ${state.currentCategory || "-"}</p>
+    <p>Album: ${state.currentAlbum || "-"}</p>
+  </div>
+
+  <div class="card">
+    <h2>👥 Players</h2>
+    ${Object.values(players).map(p => `<div>• ${p.name}</div>`).join("")}
+  </div>
+
+  <div class="card">
+    <h2>🗳 Category votes</h2>
+    ${Object.entries(votes.category || {}).map(([k,v]) =>
+      `<div>${k} → ${v}</div>`
+    ).join("")}
+  </div>
+
+  <div class="card">
+    <h2>📀 Album votes</h2>
+    ${Object.entries(votes.album || {}).map(([k,v]) =>
+      `<div>${k} → ${v}</div>`
+    ).join("")}
+  </div>
+`;
 
   window.startCategory = startCategory;
   window.resolveCategory = resolveCategory;
