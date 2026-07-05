@@ -17,12 +17,3 @@ export async function getAlbumsByEra(era, opened = []) {
     a.era === era && !opened.includes(a.id)
   );
 }
-import albums from "../data/albums.json";
-
-export async function loadAlbums() {
-  return albums;
-}
-
-export function getAlbumsByEra(era) {
-  return albums.filter(a => a.era === era);
-}
