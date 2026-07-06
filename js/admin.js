@@ -8,8 +8,7 @@ import {
 import { listenState, listenPlayers } from "./game.js";
 import { countVotes, getTopVotes, pickRandom } from "./utils.js";
 import { log } from "./logs.js";
-import { addPoints } from "./scoring.js";
-import { getRanking } from "./scoring.js";
+import { addPoints, getRanking } from "./scoring.js";
 
 const admin = document.getElementById("admin");
 
@@ -54,19 +53,25 @@ function render() {
 
   admin.innerHTML = `
     <div class="card">
-      <h1>👑 ADMIN</h1>
+      <h1>👑 ADMIN PANEL</h1>
 
+      <button onclick="startCategory()">▶ Start Category Vote</button>
       <button onclick="resolveCategory()">⚡ Resolve Category</button>
+
+      <button onclick="startAlbum()">▶ Start Album Vote</button>
       <button onclick="resolveAlbum()">⚡ Resolve Album</button>
+
       <button onclick="finishGame()">🏁 Finish Game</button>
       <button onclick="showRanking()">📊 Show Ranking</button>
-      <button onclick="reset()">🔄 Reset</button>
+
+      <button onclick="reset()">🔄 Reset Game</button>
     </div>
 
     <div class="card">
       <h2>📊 State</h2>
       <p>Phase: ${state.phase}</p>
       <p>Category: ${state.currentCategory || "-"}</p>
+      <p>Album: ${state.currentAlbum || "-"}</p>
     </div>
 
     <div class="card">
@@ -86,16 +91,40 @@ function render() {
     ${voteResult ? `
       <div class="card">
         <h2>🏆 Last Result</h2>
-        <pre>${JSON.stringify(voteResult, null, 2)}</pre>
+        <div>Type: ${voteResult.type}</div>
+        <div>Winner: <b>${voteResult.winner}</b></div>
+        <pre>${JSON.stringify(voteResult.votes, null, 2)}</pre>
       </div>
     ` : ""}
   `;
 
+  window.startCategory = startCategory;
   window.resolveCategory = resolveCategory;
+  window.startAlbum = startAlbum;
   window.resolveAlbum = resolveAlbum;
   window.finishGame = finishGame;
   window.showRanking = showRanking;
   window.reset = reset;
+}
+
+/* =========================
+   START CATEGORY
+========================= */
+
+async function startCategory() {
+  await setDoc(doc(db, "game", "votes"), {
+    category: {},
+    album: {}
+  });
+
+  await setDoc(doc(db, "game", "state"), {
+    ...state,
+    phase: "category",
+    currentCategory: null,
+    currentAlbum: null
+  });
+
+  await log("🎮 Category vote started");
 }
 
 /* =========================
@@ -122,6 +151,29 @@ async function resolveCategory() {
   });
 
   await log(`⚡ Category resolved: ${winner}`);
+}
+
+/* =========================
+   START ALBUM
+========================= */
+
+async function startAlbum() {
+  if (!state.currentCategory) {
+    alert("Resolve category first");
+    return;
+  }
+
+  await setDoc(doc(db, "game", "votes"), {
+    ...votes,
+    album: {}
+  });
+
+  await setDoc(doc(db, "game", "state"), {
+    ...state,
+    phase: "album"
+  });
+
+  await log("📀 Album vote started");
 }
 
 /* =========================
