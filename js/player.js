@@ -1,49 +1,62 @@
 import { db, doc, setDoc, onSnapshot } from "./firebase.js";
-import { listenState, listenPlayers, listenVotes, addPlayer } from "./game.js";
+import { addPlayer, listenState, listenPlayers } from "./game.js";
 import { loadAlbums } from "./albums.js";
+import { getPlayerPrimaryColor, getPlayerColor } from "./players.js";
 
 const app = document.getElementById("app");
 
 let state = null;
 let players = {};
-let votes = {};
 let me = localStorage.getItem("player_name");
 
+let categoryVotes = {};
+let albumVotes = {};
+
 /* =========================
-   LISTENERS
+   LISTEN STATE
 ========================= */
 
-listenState(s => {
+listenState((s) => {
   state = s;
   render();
 });
 
-listenPlayers(p => {
-  players = p;
+listenPlayers((p) => {
+  players = p || {};
   render();
 });
 
-listenVotes(v => {
-  votes = v;
+onSnapshot(doc(db, "game", "votes"), snap => {
+  const data = snap.data() || {};
+  categoryVotes = data.category || {};
+  albumVotes = data.album || {};
   render();
 });
 
 /* =========================
-   ROOT
+   RENDER ROOT
 ========================= */
 
 function render() {
   if (!me) return renderLogin();
-  if (!state) return renderLoading();
+
+  if (!state) {
+    app.innerHTML = `<div class="card">Chargement...</div>`;
+    return;
+  }
 
   switch (state.phase) {
     case "lobby":
       return renderLobby();
+
     case "category":
     case "categoryResolved":
       return renderCategory();
+
     case "album":
+    case "albumResolved":
       return renderAlbum();
+
     default:
       app.innerHTML = `<div class="card">En attente...</div>`;
   }
@@ -54,10 +67,10 @@ function render() {
 ========================= */
 
 function renderLogin() {
-  const used = Object.values(players).map(p => p.name);
+  const usedNames = Object.values(players).map(p => p.name);
 
   const available = ["Alice", "Bob", "Charlie", "Emma", "Julie"]
-    .filter(n => !used.includes(n));
+    .filter(n => !usedNames.includes(n));
 
   app.innerHTML = `
     <div class="card">
@@ -65,27 +78,21 @@ function renderLogin() {
     </div>
 
     <div class="card">
-      ${available.map(n => `
-        <button onclick="select('${n}')">${n}</button>
+      ${available.map(name => `
+        <button onclick="select('${name}')">${name}</button>
       `).join("")}
     </div>
   `;
 
   window.select = async (name) => {
-    const player = {
-      id: name,
-      name,
-      color: getColor(name)
-    };
+    await addPlayer({
+      id: name.toLowerCase(),
+      name
+    });
 
-    try {
-      await addPlayer(player);
-      me = name;
-      localStorage.setItem("player_name", name);
-      render();
-    } catch (e) {
-      alert("Nom déjà pris");
-    }
+    me = name;
+    localStorage.setItem("player_name", name);
+    render();
   };
 }
 
@@ -96,18 +103,19 @@ function renderLogin() {
 function renderLobby() {
   app.innerHTML = `
     <div class="card">
-      <h2>⏳ En attente du host...</h2>
+      <h2>⏳ En attente du host</h2>
       <p>${me}</p>
     </div>
   `;
 }
 
 /* =========================
-   CATEGORY VOTE (MODIFIABLE)
+   CATEGORY VOTE
 ========================= */
 
 function renderCategory() {
-  const myVote = votes.category?.[me];
+  const already = categoryVotes?.[me];
+  const myColor = getPlayerPrimaryColor(players, me);
 
   app.innerHTML = `
     <div class="card">
@@ -115,124 +123,89 @@ function renderCategory() {
     </div>
 
     <div class="card">
-      ${voteBtn("old", "Anciens (2018-2020)", myVote)}
-      ${voteBtn("mid", "Mid Era (2021-2023)", myVote)}
-      ${voteBtn("recent", "Récents (2024-2026)", myVote)}
+      <button style="background:${myColor}" ${already ? "disabled" : ""} onclick="vote('old')">
+        Anciens (2018-2020)
+      </button>
+
+      <button style="background:${myColor}" ${already ? "disabled" : ""} onclick="vote('mid')">
+        Mid (2021-2023)
+      </button>
+
+      <button style="background:${myColor}" ${already ? "disabled" : ""} onclick="vote('recent')">
+        Recent (2024-2026)
+      </button>
+    </div>
+
+    <div class="card">
+      <h3>Votes</h3>
+      ${Object.entries(categoryVotes).map(([k,v]) => `
+        <div>${k} → ${v}</div>
+      `).join("")}
     </div>
   `;
+
+  window.vote = async (value) => {
+    await setDoc(doc(db, "game", "votes"), {
+      category: {
+        ...categoryVotes,
+        [me]: value
+      },
+      album: albumVotes
+    }, { merge: true });
+  };
 }
-
-function voteBtn(value, label, myVote) {
-  const player = players[me];
-  const color = player?.color?.secondary || "#444";
-
-  const active = myVote === value;
-
-  return `
-    <button
-      onclick="voteCategory('${value}')"
-      style="background:${active ? color : '#2a2a2a'}"
-    >
-      ${label}
-    </button>
-  `;
-}
-
-window.voteCategory = async (value) => {
-  const current = votes.category || {};
-
-  await setDoc(doc(db, "game", "votes"), {
-    ...votes,
-    category: {
-      ...current,
-      [me]: value
-    }
-  }, { merge: true });
-};
 
 /* =========================
-   ALBUM VOTE (FIX BUG + FILTER OK)
+   ALBUM VOTE
 ========================= */
 
 async function renderAlbum() {
   const albums = await loadAlbums();
 
-  const opened = state.openedAlbums || [];
-
   const filtered = albums.filter(a =>
     a.era === state.currentCategory &&
-    !opened.includes(a.id)
+    !(state.openedAlbums || []).includes(a.id)
   );
 
-  const myVote = votes.album?.[me];
-
-  if (filtered.length === 0) {
-    app.innerHTML = `
-      <div class="card">
-        ⚠️ Aucun album disponible
-      </div>
-    `;
-    return;
-  }
+  const already = albumVotes?.[me];
+  const myColor = getPlayerColor(players, me);
 
   app.innerHTML = `
     <div class="card">
       <h2>📀 Albums (${state.currentCategory})</h2>
     </div>
 
-    ${filtered.map(a => albumCard(a, myVote)).join("")}
-  `;
-}
+    ${filtered.length === 0 ? `
+      <div class="card">
+        ⚠️ Aucun album disponible
+      </div>
+    ` : filtered.map(a => `
+      <div class="card">
+        <img src="${a.cover}" style="width:100%;border-radius:12px">
+        <h3>${a.name}</h3>
+        <p>${a.year}</p>
 
-function albumCard(a, myVote) {
-  const active = myVote === a.id;
+        <button style="background:${myColor}" ${already ? "disabled" : ""} onclick="voteAlbum('${a.id}')">
+          Voter
+        </button>
+      </div>
+    `).join("")}
 
-  return `
     <div class="card">
-      <img src="${a.cover}" style="width:100%;border-radius:12px">
-
-      <h3>${a.name}</h3>
-      <p>${a.year}</p>
-
-      <button
-        onclick="voteAlbum('${a.id}')"
-        style="background:${active ? '#8B1E1E' : '#2a2a2a'}"
-      >
-        Voter
-      </button>
+      <h3>Votes</h3>
+      ${Object.entries(albumVotes).map(([k,v]) => `
+        <div>${k} → ${v}</div>
+      `).join("")}
     </div>
   `;
-}
 
-window.voteAlbum = async (id) => {
-  const current = votes.album || {};
-
-  await setDoc(doc(db, "game", "votes"), {
-    ...votes,
-    album: {
-      ...current,
-      [me]: id
-    }
-  }, { merge: true });
-};
-
-/* =========================
-   HELPERS
-========================= */
-
-function renderLoading() {
-  app.innerHTML = `<div class="card">Chargement...</div>`;
-}
-
-/* simple deterministic colors (temp V4) */
-function getColor(name) {
-  const map = {
-    Alice: { primary: "#7EC8E3", secondary: "#2B4F81" },
-    Bob: { primary: "#FF6B6B", secondary: "#8B1E1E" },
-    Charlie: { primary: "#4CAF50", secondary: "#1B5E20" },
-    Emma: { primary: "#B388FF", secondary: "#4A148C" },
-    Julie: { primary: "#FF80AB", secondary: "#AD1457" }
+  window.voteAlbum = async (id) => {
+    await setDoc(doc(db, "game", "votes"), {
+      category: categoryVotes,
+      album: {
+        ...albumVotes,
+        [me]: id
+      }
+    }, { merge: true });
   };
-
-  return map[name] || { primary: "#999", secondary: "#444" };
 }

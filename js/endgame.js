@@ -1,13 +1,13 @@
-import { db, doc, getDoc, setDoc } from "./firebase.js";
+import { getRanking } from "./scoring.js";
 
-export async function getFinalRanking() {
-  const snap = await getDoc(doc(db, "game", "scores"));
-  const scores = snap.exists() ? snap.data() : {};
+export async function showFinalRanking() {
+  const ranking = await getRanking();
 
-  return Object.entries(scores)
-    .sort((a, b) => b[1] - a[1]);
-}
+  let text = "🏆 FINAL RANKING\n\n";
 
-export async function resetScores() {
-  await setDoc(doc(db, "game", "scores"), {});
+  ranking.forEach(([name, score], i) => {
+    text += `${i + 1}. ${name} - ${score}\n`;
+  });
+
+  alert(text);
 }

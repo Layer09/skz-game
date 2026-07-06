@@ -1,28 +1,42 @@
 import { db, doc, getDoc, setDoc } from "./firebase.js";
 
 /**
- * points rules simples :
- * - bon vote catégorie : +1
- * - bon album : +2
+ * Ajoute des points aux joueurs
+ * format:
+ * {
+ *   alice: 2,
+ *   bob: 1
+ * }
  */
-
-export async function addRoundScores(results) {
+export async function addPoints(pointsMap) {
   const ref = doc(db, "game", "scores");
   const snap = await getDoc(ref);
 
   let scores = snap.exists() ? snap.data() : {};
 
-  for (const [player, data] of Object.entries(results)) {
-    if (!scores[player]) scores[player] = 0;
-
-    if (data.categoryCorrect) scores[player] += 1;
-    if (data.albumCorrect) scores[player] += 2;
+  for (const [player, points] of Object.entries(pointsMap)) {
+    scores[player] = (scores[player] || 0) + points;
   }
 
   await setDoc(ref, scores);
 }
 
+/**
+ * Récupère classement
+ */
 export async function getScores() {
-  const snap = await getDoc(doc(db, "game", "scores"));
+  const ref = doc(db, "game", "scores");
+  const snap = await getDoc(ref);
+
   return snap.exists() ? snap.data() : {};
+}
+
+/**
+ * Classement trié
+ */
+export async function getRanking() {
+  const scores = await getScores();
+
+  return Object.entries(scores)
+    .sort((a, b) => b[1] - a[1]);
 }

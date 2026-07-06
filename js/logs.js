@@ -1,12 +1,11 @@
 import { db, collection, addDoc, serverTimestamp } from "./firebase.js";
 
-export async function log(msg) {
-  const time = new Date().toLocaleString("fr-FR");
-
-  const text = `[${time}] ${msg}`;
+export async function log(message, type = "info") {
+  const text = `[${new Date().toLocaleTimeString()}] ${message}`;
 
   await addDoc(collection(db, "logs"), {
     text,
+    type,
     createdAt: serverTimestamp()
   });
 

@@ -1,10 +1,10 @@
-import { db, doc, onSnapshot, getDoc, updateDoc } from "./firebase.js";
+import { db, doc, onSnapshot, getDoc, setDoc, updateDoc } from "./firebase.js";
 import { initGame } from "./init.js";
 
 await initGame();
 
 /* =========================
-   STATE GLOBAL
+   STATE LIVE
 ========================= */
 
 export function listenState(cb) {
@@ -43,7 +43,7 @@ export async function setState(data) {
 }
 
 /* =========================
-   PLAYERS
+   ADD PLAYER
 ========================= */
 
 export async function addPlayer(player) {
@@ -61,7 +61,7 @@ export async function addPlayer(player) {
 }
 
 /* =========================
-   RESET
+   RESET GAME
 ========================= */
 
 export async function resetGame() {
@@ -70,12 +70,13 @@ export async function resetGame() {
     round: 0,
     currentCategory: null,
     currentAlbum: null,
-    openedAlbums: [],
     locked: false,
-    voteResult: null
+    openedAlbums: []
   });
 
   await setDoc(doc(db, "game", "players"), {});
   await setDoc(doc(db, "game", "votes"), {});
   await setDoc(doc(db, "game", "scores"), {});
+  await setDoc(doc(db, "game", "voteResult"), {});
+  await setDoc(doc(db, "game", "logs"), {});
 }

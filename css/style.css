@@ -1,19 +1,19 @@
 body {
   margin: 0;
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   background: #0d0d0d;
   color: white;
 }
 
+/* CARD SYSTEM */
 .card {
-  max-width: 600px;
-  margin: 12px auto;
+  margin: 12px;
+  padding: 16px;
+  background: #1c1c1c;
+  border-radius: 16px;
 }
 
-button:active {
-  transform: scale(0.98);
-}
-
+/* BUTTONS MOBILE */
 button {
   width: 100%;
   padding: 18px;
@@ -23,5 +23,36 @@ button {
   border: none;
   background: #2a2a2a;
   color: white;
+  transition: 0.15s;
 }
 
+button:active {
+  transform: scale(0.97);
+}
+
+button:disabled {
+  opacity: 0.5;
+}
+
+/* IMAGES ALBUMS */
+img {
+  display: block;
+}
+
+/* TITRES */
+h2, h3 {
+  margin-top: 0;
+}
+
+/* MOBILE OPTIMIZATION */
+@media (max-width: 600px) {
+  button {
+    font-size: 20px;
+    padding: 22px;
+  }
+
+  .card {
+    margin: 10px;
+    padding: 14px;
+  }
+}

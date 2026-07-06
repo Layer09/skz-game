@@ -1,19 +1,27 @@
-let albumsCache = null;
+let ALBUMS_CACHE = [];
 
 export async function loadAlbums() {
-  if (albumsCache) return albumsCache;
+  if (ALBUMS_CACHE.length) return ALBUMS_CACHE;
 
   const res = await fetch("./data/albums.json");
   const data = await res.json();
 
-  albumsCache = data;
+  ALBUMS_CACHE = data;
   return data;
 }
 
-export async function getAlbumsByEra(era, opened = []) {
+export async function getAlbumsByEra(era) {
+  const albums = await loadAlbums();
+  return albums.filter(a => a.era === era);
+}
+
+export async function getAvailableAlbums(state) {
   const albums = await loadAlbums();
 
+  const opened = state.openedAlbums || [];
+
   return albums.filter(a =>
-    a.era === era && !opened.includes(a.id)
+    a.era === state.currentCategory &&
+    !opened.includes(a.id)
   );
 }
