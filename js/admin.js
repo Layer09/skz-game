@@ -8,7 +8,7 @@ import {
 import { listenState, listenPlayers } from "./game.js";
 import { countVotes, getTopVotes, pickRandom } from "./utils.js";
 import { log } from "./logs.js";
-import { addPoints, getRanking } from "./scoring.js";
+import { addPoints, getScores } from "./scoring.js";
 
 const admin = document.getElementById("admin");
 
@@ -69,7 +69,7 @@ function render() {
 
     <div class="card">
       <h2>📊 State</h2>
-      <p>Phase: ${state.phase}</p>
+      <p>Phase: <b>${state.phase}</b></p>
       <p>Category: ${state.currentCategory || "-"}</p>
       <p>Album: ${state.currentAlbum || "-"}</p>
     </div>
@@ -91,9 +91,14 @@ function render() {
     ${voteResult ? `
       <div class="card">
         <h2>🏆 Last Result</h2>
-        <div>Type: ${voteResult.type}</div>
+        <div><b>${voteResult.type}</b></div>
         <div>Winner: <b>${voteResult.winner}</b></div>
-        <pre>${JSON.stringify(voteResult.votes, null, 2)}</pre>
+
+        <div style="margin-top:10px">
+          ${Object.entries(voteResult.votes || {}).map(([k,v]) => `
+            <div>${k}: ${v} votes</div>
+          `).join("")}
+        </div>
       </div>
     ` : ""}
   `;
@@ -120,8 +125,7 @@ async function startCategory() {
   await setDoc(doc(db, "game", "state"), {
     ...state,
     phase: "category",
-    currentCategory: null,
-    currentAlbum: null
+    currentCategory: null
   });
 
   await log("🎮 Category vote started");
@@ -198,17 +202,21 @@ async function resolveAlbum() {
     winner
   });
 
-  await log(`📀 Album resolved: ${winner}`);
+  /* =========================
+     SCORE SIMPLE +1
+  ========================= */
 
-  // points simples
   const points = {};
-  for (const p of Object.keys(players)) {
+
+  Object.keys(players).forEach(p => {
     if (albumVotes[p] === winner) {
       points[p] = 1;
     }
-  }
+  });
 
   await addPoints(points);
+
+  await log(`📀 Album resolved: ${winner}`);
 }
 
 /* =========================
@@ -225,7 +233,10 @@ async function finishGame() {
 ========================= */
 
 async function showRanking() {
-  const ranking = await getRanking();
+  const scores = await getScores();
+
+  const ranking = Object.entries(scores)
+    .sort((a,b) => b[1] - a[1]);
 
   let text = "🏆 RANKING\n\n";
 
@@ -247,15 +258,13 @@ async function reset() {
     phase: "lobby",
     round: 0,
     currentCategory: null,
-    currentAlbum: null,
-    locked: false,
-    openedAlbums: []
+    currentAlbum: null
   });
 
   await setDoc(doc(db, "game", "players"), {});
   await setDoc(doc(db, "game", "votes"), {});
   await setDoc(doc(db, "game", "scores"), {});
-  await setDoc(doc(db, "game", "voteResult"), {});
+  await setDoc(doc(db, "game", "voteResult"), null);
 
   await log("🔄 RESET GAME");
 }

@@ -32,3 +32,14 @@ export async function initGame() {
     }
   }
 }
+
+await setDoc(doc(db, "game", "photocards"), {
+  "Seungmin": { solo: 0, duo: 0, set: 0, bonus: 0 },
+  "Hyunjin": { solo: 0, duo: 0, set: 0, bonus: 0 },
+  "Changbin": { solo: 0, duo: 0, set: 0, bonus: 0 },
+  "Felix": { solo: 0, duo: 0, set: 0, bonus: 0 },
+  "Han": { solo: 0, duo: 0, set: 0, bonus: 0 },
+  "Lee Know": { solo: 0, duo: 0, set: 0, bonus: 0 },
+  "Bang Chan": { solo: 0, duo: 0, set: 0, bonus: 0 },
+  "I.N": { solo: 0, duo: 0, set: 0, bonus: 0 }
+});
