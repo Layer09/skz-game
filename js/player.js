@@ -16,6 +16,7 @@ import {
 } from "./albums.js";
 
 import {
+  loadPlayers,
   getPlayerSecondaryColor
 } from "./players.js";
 
@@ -40,7 +41,7 @@ let photocardChoices = {};
 
 let albumsCache = [];
 
-
+let playersConfig = {};
 
 
 
@@ -135,6 +136,12 @@ onSnapshot(
 
 function render(){
 
+  if (!Object.keys(playersConfig).length) {
+    loadPlayers().then(data => {
+        playersConfig = data;
+        render();
+    });
+  }
 
   if(!me){
 
@@ -368,10 +375,9 @@ votes.category?.[me];
 
 const color =
 getPlayerSecondaryColor(
-players,
+playersConfig,
 me
 );
-
 
 
 app.innerHTML =
@@ -542,7 +548,7 @@ a.era===state.currentCategory
 
 const color =
 getPlayerSecondaryColor(
-players,
+playersConfig,
 me
 );
 
@@ -734,7 +740,7 @@ photocardChoices[me];
 
 const color =
 getPlayerSecondaryColor(
-players,
+playersConfig,
 me
 );
 

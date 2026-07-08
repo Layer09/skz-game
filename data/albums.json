@@ -1,28 +1,10 @@
 [
   {
-    "id": "mixtape",
-    "name": "Mixtape",
-    "year": 2018,
-    "era": "old",
-    "cover": "assets/albums/mixtape.jpg",
-    "woojin": true,
-    "open": false
-  },
-  {
     "id": "i_am_not",
     "name": "I am NOT",
     "year": 2018,
     "era": "old",
     "cover": "assets/albums/i_am_not.jpg",
-    "woojin": true,
-    "open": false
-  },
-  {
-    "id": "i_am_who",
-    "name": "I am WHO",
-    "year": 2018,
-    "era": "old",
-    "cover": "assets/albums/i_am_who.jpg",
     "woojin": true,
     "open": false
   },
@@ -90,6 +72,15 @@
     "open": false
   },
   {
+    "id": "christmasevel",
+    "name": "Christmas EveL",
+    "year": 2021,
+    "era": "mid",
+    "cover": "assets/albums/christmasevel.jpg",
+    "woojin": false,
+    "open": false
+  },
+  {
     "id": "oddinary",
     "name": "ODDINARY",
     "year": 2022,
@@ -104,15 +95,6 @@
     "year": 2022,
     "era": "mid",
     "cover": "assets/albums/maxident.jpg",
-    "woojin": false,
-    "open": false
-  },
-  {
-    "id": "5_star",
-    "name": "★★★★★ (5-STAR)",
-    "year": 2023,
-    "era": "mid",
-    "cover": "assets/albums/5_star.jpg",
     "woojin": false,
     "open": false
   },

@@ -778,8 +778,12 @@ async function validatePhotocards(){
 
 
 
-  const winners =
-    Object.keys(points);
+  const winners = [...new Set(
+      Object.values(points)
+          .flatMap(member =>
+              Object.keys(member)
+          )
+  )];
 
 
 
