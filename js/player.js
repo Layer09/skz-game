@@ -1,211 +1,851 @@
-import { db, doc, setDoc, onSnapshot } from "./firebase.js";
-import { addPlayer, listenState, listenPlayers } from "./game.js";
-import { loadAlbums } from "./albums.js";
-import { getPlayerPrimaryColor, getPlayerColor } from "./players.js";
+import {
+  db,
+  doc,
+  setDoc,
+  onSnapshot
+} from "./firebase.js";
+
+import {
+  addPlayer,
+  listenState,
+  listenPlayers
+} from "./game.js";
+
+import {
+  loadAlbums
+} from "./albums.js";
+
+import {
+  getPlayerSecondaryColor
+} from "./players.js";
+
 
 const app = document.getElementById("app");
 
+
 let state = null;
 let players = {};
-let me = localStorage.getItem("player_name");
 
-let categoryVotes = {};
-let albumVotes = {};
+let me =
+  localStorage.getItem("player_name");
+
+
+let votes = {
+  category:{},
+  album:{}
+};
+
+
+let photocardChoices = {};
+
+let albumsCache = [];
+
+
+
+
 
 /* =========================
    LISTEN STATE
 ========================= */
 
-listenState((s) => {
+
+listenState((s)=>{
+
   state = s;
+
   render();
+
 });
 
-listenPlayers((p) => {
-  players = p || {};
-  render();
-});
 
-onSnapshot(doc(db, "game", "votes"), snap => {
-  const data = snap.data() || {};
-  categoryVotes = data.category || {};
-  albumVotes = data.album || {};
-  render();
-});
+
+
 
 /* =========================
-   RENDER ROOT
+   LISTEN PLAYERS
 ========================= */
 
-function render() {
-  if (!me) return renderLogin();
 
-  if (!state) {
-    app.innerHTML = `<div class="card">Chargement...</div>`;
+listenPlayers((p)=>{
+
+  players = p || {};
+
+  render();
+
+});
+
+
+
+
+
+/* =========================
+   LISTEN VOTES
+========================= */
+
+
+onSnapshot(
+  doc(db,"game","votes"),
+  snap=>{
+
+    votes =
+      snap.data() ||
+      {
+        category:{},
+        album:{}
+      };
+
+    render();
+
+  }
+);
+
+
+
+
+
+/* =========================
+   LISTEN PHOTO CHOICES
+========================= */
+
+
+onSnapshot(
+  doc(db,"game","photocardChoices"),
+  snap=>{
+
+    photocardChoices =
+      snap.data() ||
+      {};
+
+    render();
+
+  }
+);
+
+
+
+
+
+
+
+
+/* =========================
+   ROOT
+========================= */
+
+
+function render(){
+
+
+  if(!me){
+
+    renderLogin();
+
     return;
+
   }
 
-  switch (state.phase) {
+
+
+  if(!state){
+
+    app.innerHTML =
+    `
+    <div class="card">
+      Chargement...
+    </div>
+    `;
+
+    return;
+
+  }
+
+
+
+  switch(state.phase){
+
+
     case "lobby":
-      return renderLobby();
+
+      renderLobby();
+
+      break;
+
+
 
     case "category":
-    case "categoryResolved":
-      return renderCategory();
+
+      renderCategory();
+
+      break;
+
+
 
     case "album":
-    case "albumResolved":
-      return renderAlbum();
+
+      renderAlbum();
+
+      break;
+
+
+
+    case "photocards":
+
+      renderPhotocards();
+
+      break;
+
+
 
     default:
-      app.innerHTML = `<div class="card">En attente...</div>`;
+
+
+      app.innerHTML =
+      `
+      <div class="card">
+        En attente...
+      </div>
+      `;
+
+
   }
+
+
 }
+
+
+
+
+
+
+
+
 
 /* =========================
    LOGIN
 ========================= */
 
-function renderLogin() {
-  const usedNames = Object.values(players).map(p => p.name);
 
-  const available = ["Alice", "Bob", "Charlie", "Emma", "Julie"]
-    .filter(n => !usedNames.includes(n));
+function renderLogin(){
 
-  app.innerHTML = `
-    <div class="card">
-      <h2>Choisis ton prénom</h2>
-    </div>
 
-    <div class="card">
-      ${available.map(name => `
-        <button onclick="select('${name}')">${name}</button>
-      `).join("")}
-    </div>
-  `;
+const availableNames =
+[
+"Alice",
+"Bob",
+"Charlie",
+"Emma",
+"Julie"
+]
+.filter(
+name =>
+!Object.values(players)
+.some(
+p=>p.name===name
+)
+);
 
-  window.select = async (name) => {
-    await addPlayer({
-      id: name.toLowerCase(),
-      name
-    });
 
-    me = name;
-    localStorage.setItem("player_name", name);
-    render();
-  };
+
+app.innerHTML =
+
+`
+
+<div class="card">
+
+<h2>Choisis ton prénom</h2>
+
+</div>
+
+
+
+<div class="card">
+
+${
+availableNames.map(name=>
+
+`
+
+<button onclick="selectPlayer('${name}')">
+
+${name}
+
+</button>
+
+`
+
+).join("")
 }
+
+</div>
+
+`;
+
+
+
+window.selectPlayer =
+async(name)=>{
+
+
+await addPlayer({
+
+id:name.toLowerCase(),
+
+name
+
+});
+
+
+me=name;
+
+localStorage.setItem(
+"player_name",
+name
+);
+
+
+render();
+
+
+};
+
+
+}
+
+
+
+
+
+
+
+
 
 /* =========================
    LOBBY
 ========================= */
 
-function renderLobby() {
-  app.innerHTML = `
-    <div class="card">
-      <h2>⏳ En attente du host</h2>
-      <p>${me}</p>
-    </div>
-  `;
+
+function renderLobby(){
+
+
+app.innerHTML =
+
+`
+
+<div class="card">
+
+<h2>⏳ En attente du host</h2>
+
+<p>${me}</p>
+
+</div>
+
+`;
+
+
+
 }
 
+
+
+
+
+
+
+
+
 /* =========================
-   CATEGORY VOTE
+   CATEGORY
 ========================= */
 
-function renderCategory() {
-  const already = categoryVotes?.[me];
-  const myColor = getPlayerPrimaryColor(players, me);
 
-  app.innerHTML = `
-    <div class="card">
-      <h2>📊 Catégorie</h2>
-    </div>
+function renderCategory(){
 
-    <div class="card">
-      <button style="background:${myColor}" ${already ? "disabled" : ""} onclick="vote('old')">
-        Anciens (2018-2020)
-      </button>
 
-      <button style="background:${myColor}" ${already ? "disabled" : ""} onclick="vote('mid')">
-        Mid (2021-2023)
-      </button>
+const already =
+votes.category?.[me];
 
-      <button style="background:${myColor}" ${already ? "disabled" : ""} onclick="vote('recent')">
-        Recent (2024-2026)
-      </button>
-    </div>
 
-    <div class="card">
-      <h3>Votes</h3>
-      ${Object.entries(categoryVotes).map(([k,v]) => `
-        <div>${k} → ${v}</div>
-      `).join("")}
-    </div>
-  `;
 
-  window.vote = async (value) => {
-    await setDoc(doc(db, "game", "votes"), {
-      category: {
-        ...categoryVotes,
-        [me]: value
-      },
-      album: albumVotes
-    }, { merge: true });
-  };
+const color =
+getPlayerSecondaryColor(
+players,
+me
+);
+
+
+
+app.innerHTML =
+
+
+`
+
+<div class="card">
+
+<h2>📊 Catégorie</h2>
+
+</div>
+
+
+
+<div class="card">
+
+
+<button
+
+style="background:${color}"
+
+onclick="voteCategory('old')"
+
+>
+
+Anciens (2018-2020)
+
+</button>
+
+
+
+<button
+
+style="background:${color}"
+
+onclick="voteCategory('mid')"
+
+>
+
+Mid (2021-2023)
+
+</button>
+
+
+
+<button
+
+style="background:${color}"
+
+onclick="voteCategory('recent')"
+
+>
+
+Récents (2024-2026)
+
+</button>
+
+
+
+</div>
+
+
+
+<div class="card">
+
+<h3>Votes</h3>
+
+${
+Object.entries(votes.category || {})
+.map(([k,v])=>
+
+`
+<div>
+${k} → ${v}
+</div>
+`
+
+)
+.join("")
 }
 
+</div>
+
+`;
+
+
+
+
+
+window.voteCategory =
+async(value)=>{
+
+
+if(state.locked)
+return;
+
+
+
+await setDoc(
+doc(db,"game","votes"),
+{
+
+category:
+{
+
+...votes.category,
+
+[me]:value
+
+},
+
+album:
+votes.album
+
+},
+
+{
+merge:true
+}
+
+);
+
+
+
+};
+
+
+
+}
+
+
+
+
+
+
+
+
+
 /* =========================
-   ALBUM VOTE
+   ALBUM
 ========================= */
 
-async function renderAlbum() {
-  const albums = await loadAlbums();
 
-  const filtered = albums.filter(a =>
-    a.era === state.currentCategory &&
-    !(state.openedAlbums || []).includes(a.id)
-  );
+async function renderAlbum(){
 
-  const already = albumVotes?.[me];
-  const myColor = getPlayerColor(players, me);
 
-  app.innerHTML = `
-    <div class="card">
-      <h2>📀 Albums (${state.currentCategory})</h2>
-    </div>
+if(!albumsCache.length)
 
-    ${filtered.length === 0 ? `
-      <div class="card">
-        ⚠️ Aucun album disponible
-      </div>
-    ` : filtered.map(a => `
-      <div class="card">
-        <img src="${a.cover}" style="width:100%;border-radius:12px">
-        <h3>${a.name}</h3>
-        <p>${a.year}</p>
+albumsCache =
+await loadAlbums();
 
-        <button style="background:${myColor}" ${already ? "disabled" : ""} onclick="voteAlbum('${a.id}')">
-          Voter
-        </button>
-      </div>
-    `).join("")}
 
-    <div class="card">
-      <h3>Votes</h3>
-      ${Object.entries(albumVotes).map(([k,v]) => `
-        <div>${k} → ${v}</div>
-      `).join("")}
-    </div>
-  `;
 
-  window.voteAlbum = async (id) => {
-    await setDoc(doc(db, "game", "votes"), {
-      category: categoryVotes,
-      album: {
-        ...albumVotes,
-        [me]: id
-      }
-    }, { merge: true });
-  };
+const albums =
+albumsCache.filter(a=>
+
+a.era===state.currentCategory
+
+&&
+
+!(state.openedAlbums || [])
+.includes(a.id)
+
+);
+
+
+
+const color =
+getPlayerSecondaryColor(
+players,
+me
+);
+
+
+
+app.innerHTML =
+
+`
+
+<div class="card">
+
+<h2>📀 Albums</h2>
+
+</div>
+
+
+
+${
+albums.length===0
+
+?
+
+`
+
+<div class="card">
+
+⚠️ Aucun album disponible
+
+</div>
+
+`
+
+:
+
+albums.map(a=>
+
+`
+
+<div class="card">
+
+
+<img src="${a.cover}">
+
+
+<h3>${a.name}</h3>
+
+<p>${a.year}</p>
+
+
+<button
+
+style="background:${color}"
+
+onclick="voteAlbum('${a.id}')"
+
+>
+
+Voter
+
+</button>
+
+
+</div>
+
+`
+
+).join("")
+
+}
+
+
+`;
+
+
+
+
+
+window.voteAlbum =
+async(id)=>{
+
+
+if(state.locked)
+return;
+
+
+
+await setDoc(
+doc(db,"game","votes"),
+{
+
+category:
+votes.category,
+
+album:
+{
+
+...votes.album,
+
+[me]:id
+
+}
+
+},
+
+{
+merge:true
+}
+
+);
+
+
+
+};
+
+
+
+}
+
+
+
+
+
+
+
+
+
+/* =========================
+   PHOTO CARDS
+========================= */
+
+
+async function renderPhotocards(){
+
+
+const albums =
+await loadAlbums();
+
+
+
+const album =
+albums.find(
+a=>a.id===state.currentAlbum
+);
+
+
+
+const hasWoojin =
+album?.woojin;
+
+
+
+const members =
+hasWoojin
+
+?
+
+[
+"Bang Chan",
+"Lee Know",
+"Changbin",
+"Hyunjin",
+"Han",
+"Felix",
+"Seungmin",
+"I.N",
+"Woojin"
+]
+
+:
+
+[
+"Bang Chan",
+"Lee Know",
+"Changbin",
+"Hyunjin",
+"Han",
+"Felix",
+"Seungmin",
+"I.N"
+];
+
+
+
+
+const selected =
+photocardChoices[me];
+
+
+
+const color =
+getPlayerSecondaryColor(
+players,
+me
+);
+
+
+
+
+app.innerHTML =
+
+
+`
+
+<div class="card">
+
+<h2>📸 Choisis ta photocard</h2>
+
+<p>
+Album : ${album?.name || "-"}
+</p>
+
+
+</div>
+
+
+
+
+<div class="card">
+
+${
+members.map(member=>
+
+`
+
+<button
+
+style="background:${color}"
+
+onclick="choosePhotocard('${member}')"
+
+${selected ? "disabled":""}
+
+>
+
+${member}
+
+</button>
+
+`
+
+).join("")
+}
+
+
+</div>
+
+
+
+${
+selected
+
+?
+
+`
+
+<div class="card">
+
+Ton choix :
+<b>${selected}</b>
+
+</div>
+
+`
+
+:""
+
+}
+
+
+`;
+
+
+
+
+
+window.choosePhotocard =
+async(member)=>{
+
+
+if(state.locked)
+return;
+
+
+
+await setDoc(
+doc(db,"game","photocardChoices"),
+{
+
+...photocardChoices,
+
+[me]:member
+
+},
+
+{
+merge:true
+}
+
+);
+
+
+};
+
+
+
 }
