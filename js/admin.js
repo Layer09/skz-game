@@ -7,7 +7,8 @@ import {
 
 import {
   listenState,
-  listenPlayers
+  listenPlayers,
+  resetGame
 } from "./game.js";
 
 import {
@@ -778,12 +779,12 @@ async function validatePhotocards(){
 
 
 
-  const winners = [...new Set(
-      Object.values(points)
-          .flatMap(member =>
-              Object.keys(member)
-          )
-  )];
+  const winners =
+    Object.keys(points)
+    .filter(
+      player =>
+        points[player] > 0
+    );
 
 
 
@@ -858,17 +859,20 @@ async function validatePhotocards(){
 
 async function finishGame(){
 
+  await setDoc(
+    doc(db,"game","state"),
+    {
+      ...state,
+      phase:"finished"
+    }
+  );
+
+
   await log(
     "🏁 GAME FINISHED"
   );
 
-
-  alert(
-    "Game finished"
-  );
-
 }
-
 
 
 
@@ -928,62 +932,15 @@ async function showRanking(){
 
 async function reset(){
 
-
-  if(
-    !confirm("Reset game ?")
-  )
-  return;
+  if(!confirm("Reset game ?"))
+    return;
 
 
-
-  await setDoc(
-    doc(db,"game","state"),
-    {
-      phase:"lobby",
-      round:0,
-      currentCategory:null,
-      currentAlbum:null,
-      locked:false,
-      openedAlbums:[]
-    }
-  );
-
-
-
-  await setDoc(
-    doc(db,"game","players"),
-    {}
-  );
-
-
-  await setDoc(
-    doc(db,"game","votes"),
-    {}
-  );
-
-
-  await setDoc(
-    doc(db,"game","scores"),
-    {}
-  );
-
-
-  await setDoc(
-    doc(db,"game","photocards"),
-    {}
-  );
-
-
-  await setDoc(
-    doc(db,"game","voteResult"),
-    {}
-  );
-
+  await resetGame();
 
 
   await log(
     "🔄 RESET GAME"
   );
-
 
 }

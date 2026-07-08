@@ -8,7 +8,10 @@ import {
 import {
   addPlayer,
   listenState,
-  listenPlayers
+  listenPlayers,
+  saveCategoryVote,
+  saveAlbumVote,
+  savePhotocardChoice
 } from "./game.js";
 
 import {
@@ -42,6 +45,8 @@ let photocardChoices = {};
 let albumsCache = [];
 
 let playersConfig = {};
+
+let scores = {};
 
 
 
@@ -109,13 +114,15 @@ onSnapshot(
 ========================= */
 
 
+let voteResult = null;
+
+
 onSnapshot(
-  doc(db,"game","photocardChoices"),
+  doc(db,"game","voteResult"),
   snap=>{
 
-    photocardChoices =
-      snap.data() ||
-      {};
+    voteResult =
+      snap.data() || null;
 
     render();
 
@@ -124,7 +131,17 @@ onSnapshot(
 
 
 
+onSnapshot(
+  doc(db,"game","scores"),
+  snap=>{
 
+    scores =
+      snap.data() || {};
+
+    render();
+
+  }
+);
 
 
 
@@ -201,7 +218,25 @@ function render(){
 
       break;
 
+    case "categoryResult":
 
+      renderCategoryResult();
+
+      break;
+
+
+    case "albumResult":
+
+      renderAlbumResult();
+
+      break;
+
+
+    case "finished":
+
+      renderRanking();
+
+      break;
 
     default:
 
@@ -293,11 +328,21 @@ window.selectPlayer =
 async(name)=>{
 
 
+const config =
+Object.values(playersConfig)
+.find(
+p=>p.name===name
+);
+
+
 await addPlayer({
 
 id:name.toLowerCase(),
 
-name
+name,
+
+color:
+config.color
 
 });
 
@@ -477,28 +522,9 @@ return;
 
 
 
-await setDoc(
-doc(db,"game","votes"),
-{
-
-category:
-{
-
-...votes.category,
-
-[me]:value
-
-},
-
-album:
-votes.album
-
-},
-
-{
-merge:true
-}
-
+await saveCategoryVote(
+  me,
+  value
 );
 
 
@@ -509,6 +535,60 @@ merge:true
 
 }
 
+
+function renderCategoryResult(){
+
+  if(!voteResult){
+
+    app.innerHTML = `
+      <div class="card">
+        Résultat en attente...
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  const votes =
+    voteResult.votes || {};
+
+
+  app.innerHTML = `
+
+  <div class="card">
+
+    <h2>🏆 Catégorie gagnante</h2>
+
+
+    <h3>
+      ${voteResult.winner}
+    </h3>
+
+
+    <div>
+
+    ${
+      Object.entries(votes)
+      .map(([name,count])=>`
+
+        <p>
+          ${name} : ${count} vote${count > 1 ? "s" : ""}
+        </p>
+
+      `)
+      .join("")
+    }
+
+    </div>
+
+
+  </div>
+
+  `;
+
+}
 
 
 
@@ -667,7 +747,58 @@ merge:true
 
 }
 
+function renderAlbumResult(){
 
+  if(!voteResult){
+
+    app.innerHTML = `
+      <div class="card">
+        Résultat en attente...
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+
+  const votes =
+    voteResult.votes || {};
+
+
+
+  app.innerHTML = `
+
+  <div class="card">
+
+    <h2>🏆 Album gagnant</h2>
+
+
+    <h3>
+      ${voteResult.winner}
+    </h3>
+
+
+
+    ${
+      Object.entries(votes)
+      .map(([album,count])=>`
+
+        <p>
+          ${album} : ${count} vote${count > 1 ? "s" : ""}
+        </p>
+
+      `)
+      .join("")
+    }
+
+
+  </div>
+
+  `;
+
+}
 
 
 
@@ -779,7 +910,6 @@ style="background:${color}"
 
 onclick="choosePhotocard('${member}')"
 
-${selected ? "disabled":""}
 
 >
 
@@ -833,25 +963,60 @@ return;
 
 
 
-await setDoc(
-doc(db,"game","photocardChoices"),
-{
-
-...photocardChoices,
-
-[me]:member
-
-},
-
-{
-merge:true
-}
-
+await savePhotocardChoice(
+  me,
+  member
 );
 
 
 };
 
 
+function renderRanking(){
+
+  const ranking =
+    Object.entries(scores)
+    .sort(
+      (a,b)=>b[1]-a[1]
+    );
+
+
+  app.innerHTML = `
+
+  <div class="card">
+
+    <h2>🏆 Score final</h2>
+
+
+    ${
+      ranking.length === 0
+
+      ?
+
+      `<p>Aucun score</p>`
+
+      :
+
+      ranking
+      .map(([player,score],index)=>`
+
+        <p>
+          ${index+1}.
+          ${player}
+          -
+          ${score} points
+        </p>
+
+      `)
+      .join("")
+
+    }
+
+
+  </div>
+
+  `;
+
+}
 
 }
