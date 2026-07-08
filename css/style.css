@@ -1,7 +1,3 @@
-/* =========================
-   GLOBAL
-========================= */
-
 * {
     box-sizing: border-box;
 }
@@ -18,9 +14,9 @@ body {
         Helvetica,
         sans-serif;
 
-    background: #0B132B;
+    background: #111111;
 
-    color: #F5F7FA;
+    color: #F5F5F5;
 
     min-height: 100vh;
 
@@ -28,19 +24,20 @@ body {
 
 
 
-
 #app,
 #admin {
 
-    width: 100%;
+    width:100%;
 
-    max-width: 650px;
+    max-width:650px;
 
-    margin: auto;
+    margin:auto;
 
-    padding: 15px;
+    padding:15px;
 
 }
+
+
 
 
 
@@ -51,18 +48,18 @@ body {
 
 .card {
 
-    background: #1C2541;
+    background:#1E1E1E;
 
-    border-radius: 16px;
+    border-radius:16px;
 
-    padding: 18px;
+    padding:18px;
 
-    margin-bottom: 15px;
+    margin-bottom:15px;
 
 
     box-shadow:
 
-        0 5px 15px rgba(0,0,0,0.35);
+        0 5px 15px rgba(0,0,0,.5);
 
 }
 
@@ -72,7 +69,7 @@ body {
 .card h2,
 .card h3 {
 
-    color: #F5F7FA;
+    color:#F5F5F5;
 
 }
 
@@ -80,9 +77,12 @@ body {
 
 .card p {
 
-    color: #B8C1D1;
+    color:#BDBDBD;
 
 }
+
+
+
 
 
 
@@ -119,7 +119,7 @@ button {
     color:white;
 
 
-    background:#3A506B;
+    background:#3A3A3A;
 
 
     cursor:pointer;
@@ -164,14 +164,16 @@ button:disabled {
 
 
 
+
+
 /* =========================
-   DEFAULT ADMIN BUTTONS
+   ADMIN BUTTONS
 ========================= */
 
 
 #admin button {
 
-    background:#3A506B;
+    background:#3A3A3A;
 
 }
 
@@ -179,7 +181,7 @@ button:disabled {
 
 #admin button.success {
 
-    background:#287233;
+    background:#4CAF50;
 
 }
 
@@ -187,7 +189,7 @@ button:disabled {
 
 #admin button.danger {
 
-    background:#8B1E1E;
+    background:#B71C1C;
 
 }
 
@@ -198,39 +200,31 @@ button:disabled {
 
 
 /* =========================
-   TITLES / ACCENTS
-========================= */
-
-
-h1::first-letter,
-h2::first-letter {
-
-    color:#00B0FF;
-
-}
-
-
-
-
-
-/* =========================
-   ALBUM CARDS
+   IMAGES
 ========================= */
 
 
 .card img {
 
+
     width:100%;
 
-    max-width:300px;
 
-    border-radius:14px;
+    max-width:320px;
+
 
     display:block;
 
+
     margin:10px auto;
 
+
+    border-radius:14px;
+
+
 }
+
+
 
 
 
@@ -243,15 +237,21 @@ h2::first-letter {
 
 .vote-line {
 
-    background:#263859;
+
+    background:#2A2A2A;
+
 
     border-radius:10px;
 
-    padding:8px;
+
+    padding:10px;
+
 
     margin:5px 0;
 
-    color:#F5F7FA;
+
+    color:#F5F5F5;
+
 
 }
 
@@ -262,8 +262,19 @@ h2::first-letter {
 
 
 /* =========================
-   PHOTO CARDS TABLE
+   PHOTO CARD TABLE
 ========================= */
+
+
+.table-container {
+
+
+    overflow-x:auto;
+
+
+}
+
+
 
 
 .photocard-table {
@@ -275,26 +286,27 @@ h2::first-letter {
     border-collapse:collapse;
 
 
-    background:#1C2541;
-
-
-    overflow:hidden;
+    background:#1E1E1E;
 
 
     border-radius:12px;
+
+
+    overflow:hidden;
 
 
 }
 
 
 
+
 .photocard-table th {
 
 
-    background:#263859;
+    background:#2A2A2A;
 
 
-    color:#F5F7FA;
+    color:white;
 
 
     padding:10px;
@@ -307,6 +319,7 @@ h2::first-letter {
 
 
 
+
 .photocard-table td {
 
 
@@ -315,16 +328,14 @@ h2::first-letter {
 
     border-bottom:
 
-        1px solid rgba(255,255,255,.1);
+        1px solid #444;
 
 
     text-align:center;
 
 
-    color:#F5F7FA;
-
-
 }
+
 
 
 
@@ -356,10 +367,10 @@ h2::first-letter {
     border-radius:8px;
 
 
-    border:none;
+    border:1px solid #555;
 
 
-    background:#0B132B;
+    background:#111111;
 
 
     color:white;
@@ -376,81 +387,13 @@ h2::first-letter {
 
 
 
+.photocard-table input:focus {
 
 
-/* =========================
-   PHOTO CARD MEMBER BUTTONS
-========================= */
+    outline:none;
 
 
-.member-button {
-
-
-    margin:5px 0;
-
-
-}
-
-
-
-
-
-
-
-/* =========================
-   STATUS
-========================= */
-
-
-.status {
-
-
-    background:#263859;
-
-
-    border-radius:10px;
-
-
-    padding:12px;
-
-
-    margin-top:10px;
-
-
-    color:#B8C1D1;
-
-
-}
-
-
-
-
-
-
-/* =========================
-   RANKING
-========================= */
-
-
-.score-line {
-
-
-    display:flex;
-
-
-    justify-content:space-between;
-
-
-    background:#263859;
-
-
-    padding:10px;
-
-
-    border-radius:10px;
-
-
-    margin-bottom:5px;
+    border-color:#777;
 
 
 }
@@ -469,13 +412,13 @@ h2::first-letter {
 input {
 
 
-    background:#263859;
+    background:#2A2A2A;
 
 
     color:white;
 
 
-    border:1px solid #3A506B;
+    border:1px solid #555;
 
 
 }
@@ -498,15 +441,62 @@ input:focus {
 
 
 
+
 /* =========================
-   SCROLL TABLE MOBILE
+   STATUS
 ========================= */
 
 
-.table-container {
+.status {
 
 
-    overflow-x:auto;
+    background:#2A2A2A;
+
+
+    border-radius:10px;
+
+
+    padding:12px;
+
+
+    margin-top:10px;
+
+
+    color:#BDBDBD;
+
+
+}
+
+
+
+
+
+
+
+/* =========================
+   SCORE / RANKING
+========================= */
+
+
+.score-line {
+
+
+    display:flex;
+
+
+    justify-content:space-between;
+
+
+    background:#2A2A2A;
+
+
+    padding:10px;
+
+
+    border-radius:10px;
+
+
+    margin-bottom:5px;
 
 
 }
@@ -532,26 +522,22 @@ input:focus {
     }
 
 
-    .card {
 
+    .card {
 
         padding:15px;
 
-
         border-radius:14px;
-
 
     }
 
 
-    button {
 
+    button {
 
         font-size:15px;
 
-
         padding:12px;
-
 
     }
 
@@ -559,9 +545,7 @@ input:focus {
 
     .photocard-table {
 
-
         font-size:12px;
-
 
     }
 
@@ -569,14 +553,10 @@ input:focus {
 
     .photocard-table input {
 
-
         width:45px;
-
 
         font-size:14px;
 
-
     }
-
 
 }
