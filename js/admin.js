@@ -305,6 +305,242 @@ window.reset = reset;
 
 }
 
+
+/* =========================
+   START CATEGORY
+========================= */
+
+async function startCategory(){
+
+  await setDoc(
+    doc(db,"game","votes"),
+    {
+      category:{},
+      album:{}
+    }
+  );
+
+
+  await setDoc(
+    doc(db,"game","state"),
+    {
+      ...state,
+      phase:"category",
+      currentCategory:null
+    }
+  );
+
+
+  await log(
+    "🗳️ Category vote started"
+  );
+
+}
+
+
+
+/* =========================
+   RESOLVE CATEGORY
+========================= */
+
+async function resolveCategory(){
+
+  const categoryVotes =
+    votes.category || {};
+
+
+  const counts =
+    countVotes(categoryVotes);
+
+
+  if(!Object.keys(counts).length){
+
+    alert(
+      "No category votes"
+    );
+
+    return;
+
+  }
+
+
+  const top =
+    getTopVotes(counts);
+
+
+  const winner =
+    pickRandom(top);
+
+
+
+  await setDoc(
+    doc(db,"game","state"),
+    {
+      ...state,
+      currentCategory:winner,
+      phase:"album"
+    }
+  );
+
+
+
+  await setDoc(
+    doc(db,"game","voteResult"),
+    {
+      type:"category",
+      votes:counts,
+      winner
+    }
+  );
+
+
+  await log(
+    `⚡ Category resolved: ${winner}`
+  );
+
+}
+
+
+
+/* =========================
+   START ALBUM
+========================= */
+
+async function startAlbum(){
+
+
+  if(!state.currentCategory){
+
+    alert(
+      "Resolve category first"
+    );
+
+    return;
+
+  }
+
+
+
+  await setDoc(
+    doc(db,"game","votes"),
+    {
+      ...votes,
+      album:{}
+    }
+  );
+
+
+
+  await setDoc(
+    doc(db,"game","state"),
+    {
+      ...state,
+      phase:"album"
+    }
+  );
+
+
+
+  await log(
+    "📀 Album vote started"
+  );
+
+
+}
+
+
+
+/* =========================
+   RESOLVE ALBUM
+========================= */
+
+async function resolveAlbum(){
+
+
+  const albumVotes =
+    votes.album || {};
+
+
+
+  const counts =
+    countVotes(albumVotes);
+
+
+
+  if(!Object.keys(counts).length){
+
+    alert(
+      "No album votes"
+    );
+
+    return;
+
+  }
+
+
+
+  const top =
+    getTopVotes(counts);
+
+
+
+  const winner =
+    pickRandom(top);
+
+
+
+  await setDoc(
+    doc(db,"game","state"),
+    {
+      ...state,
+      currentAlbum:winner
+    }
+  );
+
+
+
+  await setDoc(
+    doc(db,"game","voteResult"),
+    {
+      type:"album",
+      votes:counts,
+      winner
+    }
+  );
+
+
+
+  /*
+    Points pour les joueurs
+    ayant trouvé l'album
+  */
+
+  const points = {};
+
+
+  Object.keys(players)
+  .forEach(player=>{
+
+    if(albumVotes[player] === winner){
+
+      points[player]=1;
+
+    }
+
+  });
+
+
+
+  await addPoints(points);
+
+
+
+  await log(
+    `📀 Album resolved: ${winner}`
+  );
+
+
+}
  
 /* =========================
    PHOTO CARD TABLE
