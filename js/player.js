@@ -849,12 +849,3 @@ merge:true
 
 
 }
-
-export function getPlayerSecondaryColor(playersMap, name) {
-
-    const p = Object.values(playersMap)
-        .find(x => x.name === name);
-
-    return p?.color?.secondary || "#333";
-
-}
