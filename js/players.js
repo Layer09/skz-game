@@ -30,3 +30,12 @@ export function getPlayerPrimaryColor(playersMap, name) {
   const p = Object.values(playersMap).find(x => x.name === name);
   return p?.color?.primary || "#666";
 }
+
+export function getPlayerSecondaryColor(playersMap, name) {
+
+    const player = Object.values(playersMap)
+        .find(p => p.name === name);
+
+    return player?.color?.secondary || "#333333";
+
+}
