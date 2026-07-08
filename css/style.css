@@ -1,40 +1,46 @@
+/* =========================
+   GLOBAL
+========================= */
+
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 
 body {
 
-  margin: 0;
+    margin: 0;
 
-  padding: 0;
+    padding: 0;
 
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
 
-  background: #f2f2f2;
+    background: #0B132B;
 
-  color: #222;
+    color: #F5F7FA;
+
+    min-height: 100vh;
 
 }
+
 
 
 
 #app,
 #admin {
 
-  width: 100%;
+    width: 100%;
 
-  max-width: 600px;
+    max-width: 650px;
 
-  margin: auto;
+    margin: auto;
 
-  padding: 15px;
+    padding: 15px;
 
 }
-
 
 
 
@@ -45,16 +51,18 @@ body {
 
 .card {
 
-  background: white;
+    background: #1C2541;
 
-  border-radius: 16px;
+    border-radius: 16px;
 
-  padding: 18px;
+    padding: 18px;
 
-  margin-bottom: 15px;
+    margin-bottom: 15px;
 
-  box-shadow:
-    0 3px 10px rgba(0, 0, 0, 0.15);
+
+    box-shadow:
+
+        0 5px 15px rgba(0,0,0,0.35);
 
 }
 
@@ -64,9 +72,18 @@ body {
 .card h2,
 .card h3 {
 
-  margin-top: 0;
+    color: #F5F7FA;
 
 }
+
+
+
+.card p {
+
+    color: #B8C1D1;
+
+}
+
 
 
 
@@ -77,27 +94,43 @@ body {
 
 button {
 
-  width: 100%;
 
-  border: none;
+    width:100%;
 
-  border-radius: 12px;
 
-  padding: 14px;
+    border:none;
 
-  margin: 6px 0;
 
-  font-size: 16px;
+    border-radius:12px;
 
-  font-weight: bold;
 
-  color: white;
+    padding:14px;
 
-  cursor: pointer;
 
-  transition:
-    transform .15s,
-    opacity .15s;
+    margin:6px 0;
+
+
+    font-size:16px;
+
+
+    font-weight:bold;
+
+
+    color:white;
+
+
+    background:#3A506B;
+
+
+    cursor:pointer;
+
+
+    transition:
+
+        transform .15s,
+
+        opacity .15s;
+
 
 }
 
@@ -105,7 +138,15 @@ button {
 
 button:hover {
 
-  transform: scale(1.02);
+    transform:scale(1.02);
+
+}
+
+
+
+button:active {
+
+    transform:scale(.98);
 
 }
 
@@ -113,9 +154,9 @@ button:hover {
 
 button:disabled {
 
-  opacity: .5;
+    opacity:.45;
 
-  cursor: not-allowed;
+    cursor:not-allowed;
 
 }
 
@@ -124,19 +165,29 @@ button:disabled {
 
 
 /* =========================
-   IMAGES ALBUMS
+   DEFAULT ADMIN BUTTONS
 ========================= */
 
 
-img {
+#admin button {
 
-  max-width: 100%;
+    background:#3A506B;
 
-  border-radius: 12px;
+}
 
-  display: block;
 
-  margin: auto;
+
+#admin button.success {
+
+    background:#287233;
+
+}
+
+
+
+#admin button.danger {
+
+    background:#8B1E1E;
 
 }
 
@@ -147,17 +198,91 @@ img {
 
 
 /* =========================
-   TABLE PHOTO CARDS
+   TITLES / ACCENTS
+========================= */
+
+
+h1::first-letter,
+h2::first-letter {
+
+    color:#00B0FF;
+
+}
+
+
+
+
+
+/* =========================
+   ALBUM CARDS
+========================= */
+
+
+.card img {
+
+    width:100%;
+
+    max-width:300px;
+
+    border-radius:14px;
+
+    display:block;
+
+    margin:10px auto;
+
+}
+
+
+
+
+
+/* =========================
+   VOTES
+========================= */
+
+
+.vote-line {
+
+    background:#263859;
+
+    border-radius:10px;
+
+    padding:8px;
+
+    margin:5px 0;
+
+    color:#F5F7FA;
+
+}
+
+
+
+
+
+
+
+/* =========================
+   PHOTO CARDS TABLE
 ========================= */
 
 
 .photocard-table {
 
-  width: 100%;
 
-  border-collapse: collapse;
+    width:100%;
 
-  margin-top: 10px;
+
+    border-collapse:collapse;
+
+
+    background:#1C2541;
+
+
+    overflow:hidden;
+
+
+    border-radius:12px;
+
 
 }
 
@@ -165,13 +290,18 @@ img {
 
 .photocard-table th {
 
-  padding: 10px;
 
-  background: #333;
+    background:#263859;
 
-  color: white;
 
-  font-size: 14px;
+    color:#F5F7FA;
+
+
+    padding:10px;
+
+
+    font-size:14px;
+
 
 }
 
@@ -179,11 +309,20 @@ img {
 
 .photocard-table td {
 
-  padding: 8px;
 
-  border-bottom: 1px solid #ddd;
+    padding:8px;
 
-  text-align: center;
+
+    border-bottom:
+
+        1px solid rgba(255,255,255,.1);
+
+
+    text-align:center;
+
+
+    color:#F5F7FA;
+
 
 }
 
@@ -191,11 +330,15 @@ img {
 
 .photocard-table td:first-child {
 
-  text-align: left;
 
-  font-weight: bold;
+    text-align:left;
+
+
+    font-weight:bold;
+
 
 }
+
 
 
 
@@ -203,19 +346,33 @@ img {
 
 .photocard-table input {
 
-  width: 55px;
 
-  padding: 8px;
+    width:55px;
 
-  border-radius: 8px;
 
-  border: 1px solid #aaa;
+    padding:8px;
 
-  text-align: center;
 
-  font-size: 16px;
+    border-radius:8px;
+
+
+    border:none;
+
+
+    background:#0B132B;
+
+
+    color:white;
+
+
+    text-align:center;
+
+
+    font-size:16px;
+
 
 }
+
 
 
 
@@ -228,62 +385,13 @@ img {
 
 .member-button {
 
-  margin: 5px 0;
+
+    margin:5px 0;
+
 
 }
 
 
-
-
-
-/* =========================
-   SCORE / RANKING
-========================= */
-
-
-.score-line {
-
-  display: flex;
-
-  justify-content: space-between;
-
-  padding: 8px;
-
-  border-bottom: 1px solid #ddd;
-
-}
-
-
-
-
-
-
-/* =========================
-   ADMIN
-========================= */
-
-
-#admin button {
-
-  background: #333;
-
-}
-
-
-
-#admin .danger {
-
-  background: #8B1E1E;
-
-}
-
-
-
-#admin .success {
-
-  background: #287233;
-
-}
 
 
 
@@ -296,13 +404,110 @@ img {
 
 .status {
 
-  padding: 10px;
 
-  border-radius: 10px;
+    background:#263859;
 
-  background: #eee;
 
-  margin-top: 10px;
+    border-radius:10px;
+
+
+    padding:12px;
+
+
+    margin-top:10px;
+
+
+    color:#B8C1D1;
+
+
+}
+
+
+
+
+
+
+/* =========================
+   RANKING
+========================= */
+
+
+.score-line {
+
+
+    display:flex;
+
+
+    justify-content:space-between;
+
+
+    background:#263859;
+
+
+    padding:10px;
+
+
+    border-radius:10px;
+
+
+    margin-bottom:5px;
+
+
+}
+
+
+
+
+
+
+
+/* =========================
+   INPUTS
+========================= */
+
+
+input {
+
+
+    background:#263859;
+
+
+    color:white;
+
+
+    border:1px solid #3A506B;
+
+
+}
+
+
+
+input:focus {
+
+
+    outline:none;
+
+
+    border-color:#00B0FF;
+
+
+}
+
+
+
+
+
+
+/* =========================
+   SCROLL TABLE MOBILE
+========================= */
+
+
+.table-container {
+
+
+    overflow-x:auto;
+
 
 }
 
@@ -317,49 +522,61 @@ img {
 ========================= */
 
 
-@media screen and (max-width:600px) {
+@media screen and (max-width:650px){
 
 
-  body {
+    body {
 
-    font-size: 15px;
+        font-size:15px;
 
-  }
-
-
-  .card {
-
-    padding: 15px;
-
-    border-radius: 12px;
-
-  }
+    }
 
 
-  button {
-
-    font-size: 15px;
-
-    padding: 12px;
-
-  }
+    .card {
 
 
-
-  .photocard-table {
-
-    font-size: 12px;
-
-  }
+        padding:15px;
 
 
-  .photocard-table input {
+        border-radius:14px;
 
-    width: 45px;
 
-    font-size: 14px;
+    }
 
-  }
+
+    button {
+
+
+        font-size:15px;
+
+
+        padding:12px;
+
+
+    }
+
+
+
+    .photocard-table {
+
+
+        font-size:12px;
+
+
+    }
+
+
+
+    .photocard-table input {
+
+
+        width:45px;
+
+
+        font-size:14px;
+
+
+    }
 
 
 }
