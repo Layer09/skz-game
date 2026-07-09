@@ -16,8 +16,8 @@
       "name": "Nolann",
       "color": {
         "name": "vert clair",
-        "primary": "#81E784",
-        "secondary": "#2E7D32"
+        "primary": "#73f570",
+        "secondary": "#009608"
       },
       "joined": false,
       "lastSeen": null
@@ -27,8 +27,8 @@
       "name": "Anna",
       "color": {
         "name": "vert foncé",
-        "primary": "#66BB6A",
-        "secondary": "#1B5E20"
+        "primary": "#37b73d",
+        "secondary": "#0c5911"
       },
       "joined": false,
       "lastSeen": null
@@ -38,8 +38,8 @@
       "name": "Aloïsse & Yann",
       "color": {
         "name": "turquoise",
-        "primary": "#4DD0E1",
-        "secondary": "#006064"
+        "primary": "#4de1da",
+        "secondary": "#16565b"
       },
       "joined": false,
       "lastSeen": null
@@ -49,8 +49,8 @@
       "name": "Laurana",
       "color": {
         "name": "bleu clair",
-        "primary": "#64B5F6",
-        "secondary": "#1565C0"
+        "primary": "#56c0f9",
+        "secondary": "#0b53a5"
       },
       "joined": false,
       "lastSeen": null
@@ -60,8 +60,8 @@
       "name": "Océane",
       "color": {
         "name": "bleu foncé",
-        "primary": "#5C6BC0",
-        "secondary": "#1A237E"
+        "primary": "#5f8bce",
+        "secondary": "#121c85"
       },
       "joined": false,
       "lastSeen": null

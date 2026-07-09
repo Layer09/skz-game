@@ -143,6 +143,22 @@ onSnapshot(
   }
 );
 
+/* =========================
+   LISTEN PHOTO CHOICES
+========================= */
+
+
+onSnapshot(
+  doc(db,"game","photocardChoices"),
+  snap=>{
+
+    photocardChoices =
+      snap.data() || {};
+
+    render();
+
+  }
+);
 
 
 

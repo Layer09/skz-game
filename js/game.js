@@ -21,11 +21,11 @@ await initGame();
 ========================= */
 
 
-export function listenState(cb){
+export function listenState(cb) {
 
   return onSnapshot(
-    doc(db,"game","state"),
-    snap=>{
+    doc(db, "game", "state"),
+    snap => {
 
       cb(
         snap.data() || {}
@@ -43,11 +43,11 @@ export function listenState(cb){
 ========================= */
 
 
-export function listenPlayers(cb){
+export function listenPlayers(cb) {
 
   return onSnapshot(
-    doc(db,"game","players"),
-    snap=>{
+    doc(db, "game", "players"),
+    snap => {
 
       cb(
         snap.data() || {}
@@ -65,16 +65,16 @@ export function listenPlayers(cb){
 ========================= */
 
 
-export function listenVotes(cb){
+export function listenVotes(cb) {
 
   return onSnapshot(
-    doc(db,"game","votes"),
-    snap=>{
+    doc(db, "game", "votes"),
+    snap => {
 
       cb(
         snap.data() || {
-          category:{},
-          album:{}
+          category: {},
+          album: {}
         }
       );
 
@@ -90,18 +90,18 @@ export function listenVotes(cb){
 ========================= */
 
 
-export async function getVotes(){
+export async function getVotes() {
 
   const snap =
     await getDoc(
-      doc(db,"game","votes")
+      doc(db, "game", "votes")
     );
 
 
   return snap.data() || {
 
-    category:{},
-    album:{}
+    category: {},
+    album: {}
 
   };
 
@@ -114,10 +114,10 @@ export async function getVotes(){
 ========================= */
 
 
-export async function setState(data){
+export async function setState(data) {
 
   await updateDoc(
-    doc(db,"game","state"),
+    doc(db, "game", "state"),
     data
   );
 
@@ -130,10 +130,10 @@ export async function setState(data){
 ========================= */
 
 
-export async function addPlayer(player){
+export async function addPlayer(player) {
 
   const ref =
-    doc(db,"game","players");
+    doc(db, "game", "players");
 
 
   const snap =
@@ -147,13 +147,13 @@ export async function addPlayer(player){
 
   const exists =
     Object.values(players)
-    .find(
-      p=>p.name === player.name
-    );
+      .find(
+        p => p.name === player.name
+      );
 
 
 
-  if(exists){
+  if (exists) {
 
     throw new Error(
       "NAME_TAKEN"
@@ -185,7 +185,7 @@ export async function addPlayer(player){
 export async function saveCategoryVote(
   player,
   value
-){
+) {
 
   const votes =
     await getVotes();
@@ -194,22 +194,22 @@ export async function saveCategoryVote(
 
   await setDoc(
 
-    doc(db,"game","votes"),
+    doc(db, "game", "votes"),
 
     {
 
-      category:{
+      category: {
 
         ...votes.category,
 
-        [player]:value
+        [player]: value
 
       },
 
 
       album:
 
-      votes.album || {}
+        votes.album || {}
 
     }
 
@@ -227,7 +227,7 @@ export async function saveCategoryVote(
 export async function saveAlbumVote(
   player,
   value
-){
+) {
 
   const votes =
     await getVotes();
@@ -236,20 +236,20 @@ export async function saveAlbumVote(
 
   await setDoc(
 
-    doc(db,"game","votes"),
+    doc(db, "game", "votes"),
 
     {
 
       category:
 
-      votes.category || {},
+        votes.category || {},
 
 
-      album:{
+      album: {
 
         ...votes.album,
 
-        [player]:value
+        [player]: value
 
       }
 
@@ -269,10 +269,10 @@ export async function saveAlbumVote(
 export async function savePhotocardChoice(
   player,
   value
-){
+) {
 
   const ref =
-    doc(db,"game","photocardChoices");
+    doc(db, "game", "photocardChoices");
 
 
   const snap =
@@ -292,7 +292,7 @@ export async function savePhotocardChoice(
 
       ...choices,
 
-      [player]:value
+      [player]: value
 
     }
 
@@ -307,26 +307,57 @@ export async function savePhotocardChoice(
 ========================= */
 
 
-export async function resetGame(){
+export async function resetGame() {
 
 
   await setDoc(
 
-    doc(db,"game","state"),
+    doc(db, "game", "state"),
 
     {
 
-      phase:"lobby",
+      phase: "lobby",
 
-      round:0,
+      round: 0,
 
-      currentCategory:null,
+      currentCategory: null,
 
-      currentAlbum:null,
+      currentAlbum: null,
 
-      locked:false,
+      locked: false,
 
-      openedAlbums:[]
+      openedAlbums: []
+
+    }
+
+  );
+
+  await setDoc(
+    doc(db, "game", "photocardChoices"),
+    {}
+  );
+
+
+
+  await setDoc(
+
+    doc(db, "game", "players"),
+
+    {}
+
+  );
+
+
+
+  await setDoc(
+
+    doc(db, "game", "votes"),
+
+    {
+
+      category: {},
+
+      album: {}
 
     }
 
@@ -336,7 +367,7 @@ export async function resetGame(){
 
   await setDoc(
 
-    doc(db,"game","players"),
+    doc(db, "game", "scores"),
 
     {}
 
@@ -346,23 +377,7 @@ export async function resetGame(){
 
   await setDoc(
 
-    doc(db,"game","votes"),
-
-    {
-
-      category:{},
-
-      album:{}
-
-    }
-
-  );
-
-
-
-  await setDoc(
-
-    doc(db,"game","scores"),
+    doc(db, "game", "photocardChoices"),
 
     {}
 
@@ -372,7 +387,7 @@ export async function resetGame(){
 
   await setDoc(
 
-    doc(db,"game","photocardChoices"),
+    doc(db, "game", "voteResult"),
 
     {}
 
@@ -382,17 +397,7 @@ export async function resetGame(){
 
   await setDoc(
 
-    doc(db,"game","voteResult"),
-
-    {}
-
-  );
-
-
-
-  await setDoc(
-
-    doc(db,"game","logs"),
+    doc(db, "game", "logs"),
 
     {}
 
