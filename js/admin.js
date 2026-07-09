@@ -421,6 +421,8 @@ async function resolveCategory(){
 
 async function startAlbum(){
 
+  console.log("START ALBUM CLICK");
+
 
   if(!state.currentCategory){
 
@@ -448,7 +450,7 @@ async function startAlbum(){
     doc(db,"game","state"),
     {
       ...state,
-      phase:"photocardResult"
+      phase:"album"
     }
   );
 
