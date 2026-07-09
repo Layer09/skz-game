@@ -457,9 +457,9 @@ Anciens (2018-2020)
 
 <button
 
-style="background:${votes.category?.[me] === 'recent' ? color : '#808080'}"
+style="background:${votes.category?.[me] === 'mid' ? color : '#808080'}"
 
-onclick="voteCategory('recent')"
+onclick="voteCategory('mid')"
 
 >
 
