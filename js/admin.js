@@ -144,7 +144,7 @@ function render(){
 
 
 
-    <button onclick="startAlbum()">
+    <button onclick="console.log('CLICK ALBUM'); startAlbum()">
       ▶ Start Album Vote
     </button>
 
