@@ -41,7 +41,7 @@ let state = null;
 let players = {};
 let votes = {};
 let voteResult = null;
-
+let photocardChoices = {};
 let photocards = {};
 
 
@@ -88,6 +88,17 @@ onSnapshot(
   }
 );
 
+onSnapshot(
+  doc(db,"game","photocardChoices"),
+  snap=>{
+
+    photocardChoices =
+      snap.data() || {};
+
+    render();
+
+  }
+);
 
 listenPhotocards((data)=>{
 
@@ -767,30 +778,43 @@ async function openPhotocards(){
 
 async function validatePhotocards(){
 
+  const memberPoints = {};
 
-  const points =
-    calculatePhotocardPoints(
-      photocards
-    );
+  Object.entries(photocards).forEach(([member, values])=>{
+
+    memberPoints[member] =
+      (values.solo || 0) * 5 +
+      (values.duo || 0) * 3 +
+      (values.serie || 0) * 1 +
+      (values.bonus || 0) * 3;
+
+  });
 
 
+  const playerPoints = {};
 
-  await addPoints(points);
+  Object.entries(photocardChoices).forEach(([player, member])=>{
 
+    const pts =
+      memberPoints[member] || 0;
+
+    if(pts > 0){
+
+      playerPoints[player] = pts;
+
+    }
+
+  });
+
+
+  await addPoints(playerPoints);
 
 
   const winners =
-    Object.keys(points)
-    .filter(
-      player =>
-        points[player] > 0
-    );
-
+    Object.keys(playerPoints);
 
 
   let message;
-
-
 
   if(winners.length === 0){
 
@@ -814,7 +838,6 @@ async function validatePhotocards(){
   }
 
 
-
   await setDoc(
     doc(db,"game","voteResult"),
     {
@@ -824,11 +847,9 @@ async function validatePhotocards(){
   );
 
 
-
   await log(
     "📸 Photocards validated"
   );
-
 
 
   await setDoc(
@@ -840,9 +861,7 @@ async function validatePhotocards(){
   );
 
 
-
   alert(message);
-
 
 }
 
