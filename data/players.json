@@ -49,7 +49,7 @@
       "name": "Laurana",
       "color": {
         "name": "bleu clair",
-        "primary": "#56c0f9",
+        "primary": "#77d1fe",
         "secondary": "#0b53a5"
       },
       "joined": false,
@@ -71,8 +71,8 @@
       "name": "Mélyssa",
       "color": {
         "name": "violet",
-        "primary": "#B388FF",
-        "secondary": "#4A148C"
+        "primary": "#b095f1",
+        "secondary": "#4d1394"
       },
       "joined": false,
       "lastSeen": null
