@@ -272,11 +272,15 @@ function renderLogin(){
 
 const availableNames =
 [
-"Alice",
-"Bob",
-"Charlie",
-"Emma",
-"Julie"
+"Andy & Maélys",
+"Nolann",
+"Anna",
+"Aloïsse & Yann",
+"Laurana",
+"Océane",
+"Mélyssa",
+"Gwenola",
+"Sarah"
 ]
 .filter(
 name =>
