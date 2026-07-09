@@ -390,7 +390,7 @@ async function resolveCategory(){
     {
       ...state,
       currentCategory:winner,
-      phase:"album"
+      phase:"categoryResult"
     }
   );
 
@@ -505,7 +505,8 @@ async function resolveAlbum(){
     doc(db,"game","state"),
     {
       ...state,
-      currentAlbum:winner
+      currentAlbum:winner,
+      phase:"albumResult"
     }
   );
 

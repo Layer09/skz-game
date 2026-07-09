@@ -471,7 +471,7 @@ Mid (2021-2023)
 
 <button
 
-style="background:${color}"
+style="background:${votes.category?.[me] === 'recent' ? color : '#808080'}"
 
 onclick="voteCategory('recent')"
 
@@ -569,17 +569,14 @@ function renderCategoryResult(){
 
     <div>
 
-    ${
-      Object.entries(votes)
-      .map(([name,count])=>`
-
-        <p>
-          ${name} : ${count} vote${count > 1 ? "s" : ""}
-        </p>
-
-      `)
-      .join("")
-    }
+    <p>
+      ${
+        votes[voteResult.winner] || 0
+      }
+      vote${
+        votes[voteResult.winner] > 1 ? "s" : ""
+      }
+    </p>
 
     </div>
 
@@ -747,7 +744,7 @@ merge:true
 
 }
 
-function renderAlbumResult(){
+async function renderAlbumResult(){
 
   if(!voteResult){
 
@@ -762,9 +759,19 @@ function renderAlbumResult(){
   }
 
 
+  if(!albumsCache.length)
 
-  const votes =
-    voteResult.votes || {};
+    albumsCache = await loadAlbums();
+
+
+  const album =
+    albumsCache.find(
+      a=>a.id===voteResult.winner
+    );
+
+
+  const count =
+    voteResult.votes?.[voteResult.winner] || 0;
 
 
 
@@ -775,23 +782,31 @@ function renderAlbumResult(){
     <h2>🏆 Album gagnant</h2>
 
 
-    <h3>
-      ${voteResult.winner}
-    </h3>
-
-
-
     ${
-      Object.entries(votes)
-      .map(([album,count])=>`
+      album
+      ?
+      `
+      <img 
+        src="${album.cover}"
+        style="max-width:200px"
+      >
 
-        <p>
-          ${album} : ${count} vote${count > 1 ? "s" : ""}
-        </p>
-
-      `)
-      .join("")
+      <h3>
+        ${album.name}
+      </h3>
+      `
+      :
+      `
+      <h3>
+        ${voteResult.winner}
+      </h3>
+      `
     }
+
+
+    <p>
+      ${count} vote${count > 1 ? "s" : ""}
+    </p>
 
 
   </div>
@@ -799,7 +814,6 @@ function renderAlbumResult(){
   `;
 
 }
-
 
 
 
