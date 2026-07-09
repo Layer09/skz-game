@@ -48,7 +48,7 @@
     "id": "go_live",
     "name": "GO LIVE",
     "year": 2020,
-    "era": "old",
+    "era": "mid",
     "cover": "assets/albums/go_live.jpg",
     "woojin": false,
     "open": false
@@ -57,7 +57,7 @@
     "id": "in_life",
     "name": "IN LIFE",
     "year": 2020,
-    "era": "old",
+    "era": "mid",
     "cover": "assets/albums/in_life.jpg",
     "woojin": false,
     "open": false
@@ -84,7 +84,7 @@
     "id": "oddinary",
     "name": "ODDINARY",
     "year": 2022,
-    "era": "mid",
+    "era": "recent",
     "cover": "assets/albums/oddinary.jpg",
     "woojin": false,
     "open": false
@@ -93,7 +93,7 @@
     "id": "maxident",
     "name": "MAXIDENT",
     "year": 2022,
-    "era": "mid",
+    "era": "recent",
     "cover": "assets/albums/maxident.jpg",
     "woojin": false,
     "open": false
@@ -102,7 +102,7 @@
     "id": "rock_star",
     "name": "ROCK-STAR",
     "year": 2023,
-    "era": "mid",
+    "era": "recent",
     "cover": "assets/albums/rock_star.jpg",
     "woojin": false,
     "open": false

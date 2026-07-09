@@ -449,7 +449,7 @@ onclick="voteCategory('old')"
 
 >
 
-Anciens (2018-2020)
+Anciens (2018-2019)
 
 </button>
 
@@ -463,7 +463,7 @@ onclick="voteCategory('mid')"
 
 >
 
-Mid (2021-2023)
+Mid (2020-2021)
 
 </button>
 
@@ -477,7 +477,7 @@ onclick="voteCategory('recent')"
 
 >
 
-Récents (2024-2026)
+Récents (2022-2024)
 
 </button>
 
