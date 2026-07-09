@@ -27,7 +27,7 @@
       "name": "Anna",
       "color": {
         "name": "vert foncé",
-        "primary": "#4ea452",
+        "primary": "#5b9a6b",
         "secondary": "#105e15"
       },
       "joined": false,
@@ -38,8 +38,8 @@
       "name": "Aloïsse & Yann",
       "color": {
         "name": "turquoise",
-        "primary": "#4de1da",
-        "secondary": "#16565b"
+        "primary": "#7edad5",
+        "secondary": "#177d84"
       },
       "joined": false,
       "lastSeen": null
