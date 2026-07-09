@@ -448,7 +448,7 @@ async function startAlbum(){
     doc(db,"game","state"),
     {
       ...state,
-      phase:"album"
+      phase:"photocardResult"
     }
   );
 

@@ -247,6 +247,12 @@ function render(){
 
       break;
 
+    case "photocardResult":
+
+      renderPhotocardResult();
+
+      break;
+
 
     case "finished":
 
@@ -288,7 +294,7 @@ function renderLogin(){
 
 const availableNames =
 [
-"Andy & Maélys",
+"Andy & Maëlys",
 "Nolann",
 "Anna",
 "Aloïsse & Yann",
@@ -891,7 +897,7 @@ hasWoojin
 "Felix",
 "Seungmin",
 "I.N",
-"Woojin"
+"Woojin ???"
 ]
 
 :
@@ -1016,6 +1022,96 @@ await savePhotocardChoice(
 
 };
 
+function renderPhotocardResult(){
+
+
+  if(!voteResult){
+
+    app.innerHTML = "";
+
+    return;
+
+  }
+
+
+  const winners =
+    voteResult.winners || [];
+
+
+
+  if(winners.length === 0){
+
+    app.innerHTML = `
+
+    <div class="photocard-result">
+
+      <p>
+        Personne n'a gagné de points sur cette manche !
+      </p>
+
+    </div>
+
+    `;
+
+    return;
+
+  }
+
+
+
+  app.innerHTML = `
+
+  <div class="photocard-result">
+
+
+    <div class="winner-names">
+
+    ${
+      winners.map(name=>{
+
+
+        const player =
+          Object.values(playersConfig)
+          .find(
+            p=>p.name===name
+          );
+
+
+        return `
+
+        <span
+        style="
+          color:${player?.color?.primary || "#FFFFFF"};
+        "
+        >
+          ${name}
+        </span>
+
+        `;
+
+
+      }).join(", ")
+
+    }
+
+
+    </div>
+
+
+    <div class="winner-text">
+
+      ont gagné des points sur cette manche
+
+    </div>
+
+
+  </div>
+
+
+  `;
+
+
+}
 
 function renderRanking(){
 
