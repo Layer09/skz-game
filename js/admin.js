@@ -505,12 +505,16 @@ async function resolveAlbum(){
 
 
   await setDoc(
-    doc(db,"game","state"),
-    {
-      ...state,
-      currentAlbum:winner,
-      phase:"albumResult"
-    }
+      doc(db,"game","state"),
+      {
+          ...state,
+          currentAlbum: winner,
+          phase: "albumResult",
+          openedAlbums: [
+              ...(state.openedAlbums || []),
+              winner
+          ]
+      }
   );
 
 

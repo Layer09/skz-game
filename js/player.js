@@ -462,6 +462,26 @@ playersConfig,
 me
 );
 
+if(!albumsCache.length){
+    albumsCache = await loadAlbums();
+}
+
+const remaining = {
+    old: 0,
+    mid: 0,
+    recent: 0
+};
+
+albumsCache.forEach(album => {
+
+    if(
+        !(state.openedAlbums || [])
+        .includes(album.id)
+    ){
+        remaining[album.era]++;
+    }
+
+});
 
 app.innerHTML =
 
@@ -483,11 +503,17 @@ app.innerHTML =
 
 style="background:${votes.category?.[me] === 'old' ? color : '#808080'}"
 
-onclick="voteCategory('old')"
+onclick="${
+remaining.old
+    ? "voteCategory('old')"
+    : ""
+}"
+
+${remaining.old ? "" : "disabled"}
 
 >
 
-Anciens (2018-2019)
+Anciens : 2018-2020 (${remaining.old} albums restants)
 
 </button>
 
@@ -497,11 +523,17 @@ Anciens (2018-2019)
 
 style="background:${votes.category?.[me] === 'mid' ? color : '#808080'}"
 
-onclick="voteCategory('mid')"
+onclick="${
+remaining.mid
+    ? "voteCategory('mid')"
+    : ""
+}"
+
+${remaining.mid ? "" : "disabled"}
 
 >
 
-Mid (2020-2021)
+Mid : 2020-2021 (${remaining.mid} albums restants)
 
 </button>
 
@@ -511,11 +543,17 @@ Mid (2020-2021)
 
 style="background:${votes.category?.[me] === 'recent' ? color : '#808080'}"
 
-onclick="voteCategory('recent')"
+onclick="${
+remaining.recent
+    ? "voteCategory('recent')"
+    : ""
+}"
+
+${remaining.recent ? "" : "disabled"}
 
 >
 
-Récents (2022-2024)
+Récents : 2022-2024 (${remaining.recent} albums restants)
 
 </button>
 
