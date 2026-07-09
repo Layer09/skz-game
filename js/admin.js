@@ -912,37 +912,18 @@ async function finishGame(){
 
 async function showRanking(){
 
-  const scores =
-    await getScores();
-
-
-
-  const ranking =
-    Object.entries(scores)
-    .sort(
-      (a,b)=>b[1]-a[1]
-    );
-
-
-
-  let text =
-    "🏆 RANKING\n\n";
-
-
-
-  ranking.forEach(
-    ([name,score],index)=>{
-
-      text +=
-      `${index+1}. ${name} - ${score}\n`;
-
+  await setDoc(
+    doc(db,"game","state"),
+    {
+      ...state,
+      phase:"finished"
     }
   );
 
 
-
-  alert(text);
-
+  await log(
+    "📊 Ranking displayed"
+  );
 
 }
 
