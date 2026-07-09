@@ -443,7 +443,7 @@ app.innerHTML =
 
 <button
 
-style="background:${color}"
+style="background:${votes.category?.[me] === 'old' ? color : '#808080'}"
 
 onclick="voteCategory('old')"
 
@@ -457,9 +457,9 @@ Anciens (2018-2020)
 
 <button
 
-style="background:${color}"
+style="background:${votes.category?.[me] === 'recent' ? color : '#808080'}"
 
-onclick="voteCategory('mid')"
+onclick="voteCategory('recent')"
 
 >
 
@@ -680,7 +680,7 @@ albums.map(a=>
 
 <button
 
-style="background:${color}"
+style="background:${votes.album?.[me] === a.id ? color : '#808080'}"
 
 onclick="voteAlbum('${a.id}')"
 
@@ -906,10 +906,9 @@ members.map(member=>
 
 <button
 
-style="background:${color}"
+style="background:${selected === member ? color : '#808080'}"
 
 onclick="choosePhotocard('${member}')"
-
 
 >
 
