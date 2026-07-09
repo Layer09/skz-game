@@ -5,7 +5,7 @@
       "name": "Andy & Maélys",
       "color": {
         "name": "jaune doré",
-        "primary": "#FFD54F",
+        "primary": "#ffda61",
         "secondary": "#B8860B"
       },
       "joined": false,
@@ -16,7 +16,7 @@
       "name": "Nolann",
       "color": {
         "name": "vert clair",
-        "primary": "#a4ff8f",
+        "primary": "#adfe9b",
         "secondary": "#348a05"
       },
       "joined": false,
@@ -49,7 +49,7 @@
       "name": "Laurana",
       "color": {
         "name": "bleu clair",
-        "primary": "#77d1fe",
+        "primary": "#8ed8fc",
         "secondary": "#0b53a5"
       },
       "joined": false,
@@ -71,7 +71,7 @@
       "name": "Mélyssa",
       "color": {
         "name": "violet",
-        "primary": "#b095f1",
+        "primary": "#b9a2ef",
         "secondary": "#4d1394"
       },
       "joined": false,
@@ -82,8 +82,8 @@
       "name": "Gwenola",
       "color": {
         "name": "rose",
-        "primary": "#F48FB1",
-        "secondary": "#AD1457"
+        "primary": "#f3a9dc",
+        "secondary": "#a73483"
       },
       "joined": false,
       "lastSeen": null
@@ -93,7 +93,7 @@
       "name": "Sarah",
       "color": {
         "name": "rouge",
-        "primary": "#EF5350",
+        "primary": "#ed6663",
         "secondary": "#B71C1C"
       },
       "joined": false,
