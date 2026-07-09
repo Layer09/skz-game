@@ -167,14 +167,28 @@ onSnapshot(
 ========================= */
 
 
-function render(){
+async function render(){
 
   if (!Object.keys(playersConfig).length) {
+
     loadPlayers().then(data => {
-        playersConfig = data;
-        render();
+
+      playersConfig = data;
+
+      render();
+
     });
+
   }
+
+
+  if(!albumsCache.length){
+
+    albumsCache = await loadAlbums();
+
+  }
+
+
 
   if(!me){
 
@@ -214,7 +228,7 @@ function render(){
 
     case "category":
 
-      renderCategory();
+      await renderCategory();
 
       break;
 
@@ -222,7 +236,7 @@ function render(){
 
     case "album":
 
-      renderAlbum();
+      await renderAlbum();
 
       break;
 
@@ -230,9 +244,10 @@ function render(){
 
     case "photocards":
 
-      renderPhotocards();
+      await renderPhotocards();
 
       break;
+
 
 
     case "photocardResult":
@@ -240,6 +255,7 @@ function render(){
       renderPhotocardResult();
 
       break;
+
 
 
     case "categoryResult":
@@ -249,17 +265,13 @@ function render(){
       break;
 
 
+
     case "albumResult":
 
       renderAlbumResult();
 
       break;
 
-    case "photocardResult":
-
-      renderPhotocardResult();
-
-      break;
 
 
     case "finished":
@@ -267,6 +279,8 @@ function render(){
       renderRanking();
 
       break;
+
+
 
     default:
 
@@ -284,6 +298,116 @@ function render(){
 
 }
 
+
+
+
+function renderPhotocardResult(){
+
+    const winners = voteResult?.winners || [];
+
+
+    if(winners.length === 0){
+
+        app.innerHTML = `
+
+        <div class="card"
+             style="
+             background:#333;
+             color:white;
+             text-align:center;
+             font-size:1.4rem;
+             ">
+
+            Personne n'a gagné de points sur cette manche.
+
+        </div>
+
+        `;
+
+        return;
+
+    }
+
+
+
+    const text = winners.map(name => {
+
+
+        const player =
+        Object.values(playersConfig)
+        .find(
+          p => p.name === name
+        );
+
+
+        const color =
+        player?.color?.primary || "#FFFFFF";
+
+
+        return `
+
+        <span
+        style="
+        color:${color};
+        font-weight:bold;
+        ">
+
+        ${name}
+
+        </span>
+
+        `;
+
+
+    });
+
+
+
+    let sentence;
+
+
+
+    if(text.length === 1){
+
+
+        sentence =
+        `${text[0]} a gagné des points sur cette manche !`;
+
+
+    }
+
+    else{
+
+
+        sentence =
+        `${text.slice(0,-1).join(", ")} et ${text.at(-1)} ont gagné des points sur cette manche !`;
+
+
+    }
+
+
+
+    app.innerHTML = `
+
+
+    <div class="card"
+
+    style="
+    background:#333;
+    color:white;
+    text-align:center;
+    font-size:1.4rem;
+    ">
+
+        ${sentence}
+
+    </div>
+
+
+    `;
+
+
+}
 
 
 
@@ -503,7 +627,7 @@ app.innerHTML =
 ========================= */
 
 
-function renderCategory(){
+async function renderCategory(){
 
 
 const already =
