@@ -861,11 +861,11 @@ async function validatePhotocards(){
 
 
   await setDoc(
-    doc(db,"game","state"),
-    {
-      ...state,
-      phase:"album"
-    }
+      doc(db,"game","state"),
+      {
+          ...state,
+          phase:"photocardResult"
+      }
   );
 
 

@@ -234,6 +234,14 @@ function render(){
 
       break;
 
+
+    case "photocardResult":
+
+      renderPhotocardResult();
+
+      break;
+
+
     case "categoryResult":
 
       renderCategoryResult();
@@ -279,7 +287,54 @@ function render(){
 
 
 
+function renderPhotocardResult(){
 
+    const winners = voteResult?.winners || [];
+
+    if(winners.length === 0){
+
+        app.innerHTML = `
+        <div class="card">
+            Personne n'a gagné de points sur cette manche.
+        </div>
+        `;
+
+        return;
+    }
+
+    const text = winners.map(name => {
+
+        const player = Object.values(playersConfig)
+            .find(p => p.name === name);
+
+        const color = player?.color?.primary || "#fff";
+
+        return `<span style="color:${color};font-weight:bold">${name}</span>`;
+
+    });
+
+    let sentence;
+
+    if(text.length === 1){
+
+        sentence = `${text[0]} a gagné des points sur cette manche !`;
+
+    }else{
+
+        sentence =
+            `${text.slice(0,-1).join(", ")} et ${text.at(-1)} ont gagné des points sur cette manche !`;
+
+    }
+
+    app.innerHTML = `
+        <div class="card"
+             style="text-align:center;font-size:1.4rem">
+
+            ${sentence}
+
+        </div>
+    `;
+}
 
 
 
