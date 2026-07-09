@@ -27,7 +27,7 @@
       "name": "Anna",
       "color": {
         "name": "vert foncé",
-        "primary": "#5b9a6b",
+        "primary": "#57b26e",
         "secondary": "#105e15"
       },
       "joined": false,
@@ -49,7 +49,7 @@
       "name": "Laurana",
       "color": {
         "name": "bleu clair",
-        "primary": "#8ed8fc",
+        "primary": "#a5eaff",
         "secondary": "#0b53a5"
       },
       "joined": false,
