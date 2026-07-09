@@ -126,6 +126,7 @@ function render(){
 
 
   admin.innerHTML = `
+  <div class="admin-page">
 
   <div class="card">
 
@@ -296,7 +297,7 @@ Winner :
 ""
 }
 
-
+</div>
 `;
 
 

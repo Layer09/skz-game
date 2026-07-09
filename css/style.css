@@ -560,3 +560,35 @@ input:focus {
     }
 
 }
+
+
+/* =========================
+   ADMIN DESKTOP
+========================= */
+
+.admin-page {
+    width: 95%;
+    max-width: 1400px;
+    margin: auto;
+}
+
+
+.admin-page .card {
+
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 25px;
+    margin-bottom: 20px;
+
+}
+
+
+.admin-page button {
+
+    min-width: 220px;
+    padding: 15px 25px;
+
+    font-size: 18px;
+
+}
