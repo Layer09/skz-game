@@ -307,19 +307,31 @@ app.innerHTML =
 <div class="card">
 
 ${
-availableNames.map(name=>
+availableNames.map(name=>{
 
-`
+  const config =
+    Object.values(playersConfig)
+    .find(
+      p=>p.name===name
+    );
 
-<button onclick="selectPlayer('${name}')">
+
+  return `
+
+<button
+onclick="selectPlayer('${name}')"
+style="
+  color:${config?.color?.primary || '#FFFFFF'};
+"
+>
 
 ${name}
 
 </button>
 
-`
+`;
 
-).join("")
+}).join("")
 }
 
 </div>
