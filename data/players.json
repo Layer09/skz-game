@@ -1,41 +1,74 @@
 {
   "players": [
     {
-      "id": "alice",
-      "name": "Alice",
+      "id": "andy-maelys",
+      "name": "Andy & Maélys",
       "color": {
-        "name": "bleu ciel",
-        "primary": "#7EC8E3",
-        "secondary": "#2B4F81"
-      },
-      "joined": true,
-      "lastSeen": null
-    },
-    {
-      "id": "bob",
-      "name": "Bob",
-      "color": {
-        "name": "rouge",
-        "primary": "#FF6B6B",
-        "secondary": "#8B1E1E"
+        "name": "jaune doré",
+        "primary": "#FFD54F",
+        "secondary": "#B8860B"
       },
       "joined": false,
       "lastSeen": null
     },
     {
-      "id": "charlie",
-      "name": "Charlie",
+      "id": "nolann",
+      "name": "Nolann",
+      "color": {
+        "name": "vert clair",
+        "primary": "#81E784",
+        "secondary": "#2E7D32"
+      },
+      "joined": false,
+      "lastSeen": null
+    },
+    {
+      "id": "anna",
+      "name": "Anna",
       "color": {
         "name": "vert foncé",
-        "primary": "#4CAF50",
+        "primary": "#66BB6A",
         "secondary": "#1B5E20"
       },
       "joined": false,
       "lastSeen": null
     },
     {
-      "id": "emma",
-      "name": "Emma",
+      "id": "aloisse-yann",
+      "name": "Aloïsse & Yann",
+      "color": {
+        "name": "turquoise",
+        "primary": "#4DD0E1",
+        "secondary": "#006064"
+      },
+      "joined": false,
+      "lastSeen": null
+    },
+    {
+      "id": "laurana",
+      "name": "Laurana",
+      "color": {
+        "name": "bleu clair",
+        "primary": "#64B5F6",
+        "secondary": "#1565C0"
+      },
+      "joined": false,
+      "lastSeen": null
+    },
+    {
+      "id": "oceane",
+      "name": "Océane",
+      "color": {
+        "name": "bleu foncé",
+        "primary": "#5C6BC0",
+        "secondary": "#1A237E"
+      },
+      "joined": false,
+      "lastSeen": null
+    },
+    {
+      "id": "melyssa",
+      "name": "Mélyssa",
       "color": {
         "name": "violet",
         "primary": "#B388FF",
@@ -45,12 +78,23 @@
       "lastSeen": null
     },
     {
-      "id": "julie",
-      "name": "Julie",
+      "id": "gwenola",
+      "name": "Gwenola",
       "color": {
         "name": "rose",
-        "primary": "#FF80AB",
+        "primary": "#F48FB1",
         "secondary": "#AD1457"
+      },
+      "joined": false,
+      "lastSeen": null
+    },
+    {
+      "id": "sarah",
+      "name": "Sarah",
+      "color": {
+        "name": "rouge",
+        "primary": "#EF5350",
+        "secondary": "#B71C1C"
       },
       "joined": false,
       "lastSeen": null
